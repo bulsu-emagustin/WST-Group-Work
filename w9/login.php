@@ -1,20 +1,15 @@
 <?php 
-  require "config.php";
-
   session_start();
-  if (isset($_SESSION["login_data"]))
+  if (isset($_SESSION["username"]) && isset($_SESSION["password"]))
   {
     header('Location: index.php');
     exit();
   }
 
-$text = "Login";
-
-$email_field_label = "Please enter Username or Email address";
-$password_field_label = "Please enter Password";
-
-$remember_me = false;
-
+  $text = "Login";
+  $email_field_label = "Please enter Email address";
+  $password_field_label = "Please enter Password";
+  $remember_me = false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,69 +18,82 @@ $remember_me = false;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <link rel="stylesheet" href="css/styles.css">
-  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
 
-  <!-- HEADER -->
-  <header>
-  </header>
+<body class="text-white" style="background: radial-gradient(circle at left, #1a0000, #000000);">
 
-  <!-- MAIN -->
-  <main >
-    <div class="container">
-      <div class="row registration justify-content-center align-items-center">
-        <div class="col-lg-4 mx-auto">
-          <h2 class="text-center mb-3"><?php echo $text; ?></h2>
-          <form method="post" action="<?php echo "$url/db/action/tologin.php"; ?>" id="login-form" novalidate>
-            <div class="row">
-              <div class="col border border-2 rounded rounded-3 p-5">
-                <div class="mb-3">
-                  <label for="login-email" class="form-label d-none">Email address</label>
-                  <input type="text" class="form-control" name="username" id="login-email" required="false" placeholder="<?php echo $email_field_label; ?>">
-                  <div id="login-email-msg" class="form-text"></div>
-                </div>
-                <div class="mb-3">
-                  <label for="login-password" class="form-label d-none">Password</label>
-                  <input type="password" class="form-control" name="password" id="login-password" placeholder="<?php echo $password_field_label; ?>">
-                  <div id="login-password-msg"></div>
-                </div>
-                <div class="mb-3 form-check">
-                  <input type="checkbox" name="rememberme" class="form-check-input" id="login-rememberme" <?php echo $remember_me ?'checked': ''; ?>>
-                  <label class="form-check-label" for="exampleCheck1">Remember Me</label>
-                </div>
-                <div class="d-grid mb-3">
-                  <button type="submit" name="submit" value="Login" id="form-submit" class="btn btn-primary">Submit Me</button>
-                </div>
-                <div class="mt-4 text-center">
-                  <p><a href="<?php echo "$url/register.php"; ?>">Register User</a> | <a href="<?php echo "$url/forgotpassword.php"; ?>">Forgot Password</a>  </p>
-                </div>
-              </div>
-              <!-- <div class="col">
+<div class="container-fluid vh-100 d-flex align-items-center">
+  <div class="row w-100">
 
-              </div> -->
-            </div>
-          </form>
+  
+    <div class="col-lg-7 d-flex flex-column justify-content-center px-5">
+      <h5 class="mb-4">
+        <span class="fw-bold">MANGA</span><span class="text-danger fw-bold">QUILLA</span>
+      </h5>
+
+      <h1 class="display-3 fw-bold">
+        MANGA?<br>
+        <span class="text-danger">WE GOT YOU.</span>
+      </h1>
+
+      <p class="mt-3 text-secondary">
+        Step into the world of manga where every page tells a story.
+        From action-packed adventures to heartwarming romances,
+        our store brings your favorite series together in one place.
+      </p>
+    </div>
+
+    <!-- log in box -->
+    <div class="col-lg-5 d-flex justify-content-center">
+      <div class="p-5 rounded-3 shadow-lg" style="background-color: rgba(255,255,255,0.05); width: 500px;">
+
+        <h3 class="fw-bold mb-3">
+          SIGN <span class="text-danger">IN</span>
+        </h3>
+
+        <p class="text-secondary small mb-4">Welcome, Readers!</p>
+
+        <form method="POST" action="">
+
+          <div class="mb-3">
+            <label class="form-label small"><?= $email_field_label ?></label>
+            <input type="text" name="email" class="form-control bg-dark border-0 text-white" placeholder="you@example.com">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small"><?= $password_field_label ?></label>
+            <input type="password" name="password" class="form-control bg-dark border-0 text-white" placeholder="********">
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="remember_me" <?= $remember_me ? 'checked' : '' ?>>
+            <label class="form-check-label small">Remember me</label>
+          </div>
+
+          <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-danger"><?= $text ?></button>
+          </div>
+
+        </form>     
+
+        <div class="text-center text-secondary mb-2">OR</div>
+
+        <div class="d-grid mb-3">
+          <button class="btn btn-dark border text-white">
+            Continue with Google
+          </button>
         </div>
+
+        <p class="text-center small">
+          New here? <span class="text-danger">Create an account</span>
+        </p>
+
       </div>
     </div>
 
-  </main>
+  </div>
+</div>
 
-  <!-- FOOTER -->
-  <footer>
-
-  </footer>
-  
-  <!-- <script src="js/main.js"></script> -->
-
-  <script>
-    // var login_form = document.getElementById("login-form")
-    // login_form.addEventListener("submit", function(event){
-    //   event.preventDefault()
-    // });
-  </script>
 </body>
 </html>
