@@ -1,184 +1,212 @@
 <?php
-  require 'config.php';
-  
-  session_start();
+require 'config.php';
+session_start();
 
-  if (!isset($_SESSION["login_data"]))
-  {
+if (!isset($_SESSION["login_data"])) {
     session_destroy();
     header('Location: login.php');
     exit();
-  } 
+}
 
-  $user_data = $_SESSION["login_data"];
+$user_data = $_SESSION["login_data"];
+$userid = $user_data["id"];
 
-  $userid = $user_data["id"];
-
-  try{
-    
+try {
     require 'db/action/dbconfig.php';
 
-    $stmt = "SELECT * FROM login WHERE id='$userid'";
-    
-    $query = $conn->query($stmt);
-    $result = $query->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $conn->prepare("SELECT * FROM login WHERE id = ?");
+    $stmt->execute([$userid]);
+    $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // var_dump($result);
-
-    $user_data = array_shift($result);
-
-    $conn = null;
-
-  } catch(PDOException $e) {
-
-  }
-
+} catch (PDOException $e) {
+    die("DB Error: " . $e->getMessage());
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <link rel="stylesheet" href="css/styles.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <script>
-    window.onload = function() {
-      // document.getElementById('heroheader').textContent = `Welcome, ${sessionStorage.getItem('username')}!`;
-      // document.getElementById('heroheader').textContent = `Welcome, ${localStorage.getItem('loggedInUser')}!`;
-    }
-  </script>
+<style>
+
+/* ===== BODY ===== */
+body {
+    background-color: #000;
+    color: #fff;
+}
+
+/* ===== NAVBAR ===== */
+.custom-navbar {
+    background-color: #111;
+    border-bottom: 2px solid red;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+/* SEARCH */
+.custom-navbar input {
+    border-radius: 20px;
+    padding: 8px 15px;
+}
+
+/* SUB NAV */
+.sub-nav {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    background-color: #0a0a0a;
+    padding: 15px 0;
+    border-bottom: 1px solid #222;
+}
+
+.sub-nav a {
+    text-decoration: none;
+    color: #aaa;
+    position: relative;
+}
+
+/* ACTIVE TAB */
+.sub-nav a.active {
+    color: white;
+}
+
+.sub-nav a.active::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: red;
+    bottom: -8px;
+    left: 0;
+}
+
+/* HOVER */
+.sub-nav a:hover {
+    color: red;
+}
+
+/* HERO */
+.hero {
+    position: relative;
+    height: 400px;
+    background: url('images/demonslayer.jpg') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    padding-left: 50px;
+}
+
+/* OVERLAY */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+}
+
+.hero-content {
+    position: relative;
+    max-width: 500px;
+}
+
+.hero h1 {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.hero span {
+    color: red;
+}
+
+/* CARDS */
+.card {
+    background-color: #111;
+    color: white;
+    border: 1px solid #222;
+}
+
+.card img {
+    height: 200px;
+    object-fit: cover;
+}
+
+</style>
 </head>
+
 <body>
 
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+  <div class="container-fluid">
 
-  <!-- HEADER -->
-  <header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#">Navbar</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Dropdown
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#">Action</a></li>
-                <li><a class="dropdown-item" href="#">Another action</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Something else here</a></li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link " href="<?php echo $url; ?>/update.php?id=<?php echo $userid; ?>" tabindex="-1" aria-disabled="true">Update User</a>
-            </li>
-          </ul>
-          <form class="d-flex">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
-          <button class="btn btn-outline-primary my-2 my-sm-0" type="button" id="logout">Logout</button>
+    <a class="navbar-brand" href="#">
+      MANGA<span class="text-danger">QUILLA</span>
+    </a>
+
+    <form class="d-flex mx-auto w-50">
+      <input class="form-control bg-dark border-0 text-white" type="search" placeholder="Search...">
+    </form>
+
+    <div>
+      <img src="<?php echo $user_data['img_url']; ?>" class="rounded-circle" width="40">
+    </div>
+
+  </div>
+</nav>
+
+<!-- ===== SUB NAV ===== -->
+<div class="sub-nav">
+  <a class="active" href="#">HOME</a>
+  <a href="#">PRODUCTS</a>
+  <a href="#">NEW ARRIVALS</a>
+  <a href="#">ABOUT US</a>
+</div>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-content">
+    <h1>
+      DEMON SLAYER:<br>
+      <span>KIMETSU NO YAIBA</span>
+    </h1>
+
+    <p class="small text-secondary mt-3">
+      Demon Slayer: Kimetsu no Yaiba is a Japanese anime series that follows the journey of Tanjiro Kamado.
+    </p>
+  </div>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div class="container my-5">
+  <div class="row">
+
+<?php
+$books = $conn->query("SELECT * FROM books")->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($books as $row) {
+?>
+
+    <div class="col-md-4 mb-4">
+      <div class="card">
+        <img src="<?php echo $row['image']; ?>">
+        <div class="card-body">
+          <h5><?php echo $row['title']; ?></h5>
+          <p><?php echo $row['excerpt']; ?></p>
+          <a href="<?php echo $url; ?>/updatebooks.php?id=<?php echo $row['id']; ?>" class="btn btn-danger">Update</a>
         </div>
-        <div class="user-avatar ms-2">
-          <a href="#"
-            class="d-block"
-            data-bs-toggle="popover"
-            data-bs-placement="right"
-            data-bs-title="User Profile"
-            data-bs-content="Some additional user information can go here."
-            data-bs-trigger="focus">
-            
-            <?php
-            
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname= "Project_WST";
-
-    $conn = new PDO("mysql:host=$servername;port=3306", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $sql = "use ". $dbname;
-    $conn->exec($sql);
-
-        $SELECT = "SELECT * FROM login WHERE id='$userid'";
-        $result1 = $conn->query($SELECT);
-        $user_data = $result1->fetch(PDO::FETCH_ASSOC);
-        ?>
-            <img src="<?php echo $user_data['img_url']; ?>" alt="User Avatar" class="rounded-circle">
-          </a>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <main class="my-5">
-    <div class="container">
-      <div class="row">
-        <div class="col">
-          <h1 id="heroheader">Hi, <?php echo $user_data["first_name"]; ?></h1>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, voluptate.</p>
-        </div>
-      </div>
-      <div class="row">
-        <?php 
-
-
-        $SELECT = "SELECT * FROM books";
-        $result = $conn->query($SELECT);
-
-        $rows = $result->fetchAll(PDO::FETCH_ASSOC); 
-
-
-        foreach($rows as $key => $row){
-        ?>
-        
-
-   
-          <div class="col" id="product-data-<?php echo $key+1; ?>">
-
-            <div class="card" style="width: 18rem;">
-
-              <!-- <img src="<?php //echo $product['imgurl']; ?>" class="card-img-top" alt="..."> -->
-              <img src="<?php echo $row['image']; ?>" class="card-img-top" alt="...">
-              <div class="card-body">
-                <h5 class="card-title"><?php echo $row['title']; ?></h5>
-                <p class="card-text"><?php echo $row['excerpt']; ?></p>
-                <a href="#" class="btn btn-primary">Go somewhere</a>
-                <a href="<?php echo $url; ?>/updatebooks.php?id=<?php echo $row['id']; ?>" class="btn btn-primary">Update Book</a>
-              </div>
-            </div>
-          </div>
-
-        <?php } ?>
-        
       </div>
     </div>
-  </main>
 
-  
-  <!-- FOOTER -->
-  <footer>
-    <div class="py-5 bg-dark text-white text-center">
-    <p class="my-0">&copy; 2023-2024 IT 304 Web Systems and Technologies 1</p>
-    </div>
-  </footer>
+<?php } ?>
 
-  <!-- <script src="js/main.js"></script> -->
+  </div>
+</div>
+
 </body>
 </html>
