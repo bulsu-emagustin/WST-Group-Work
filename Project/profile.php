@@ -8,21 +8,48 @@
 body {
     background: #2b2b2b;
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
 }
 
 .container {
-    width: 900px;
-    margin: 50px auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 60px auto;
     background: linear-gradient(to right, #0a0a0a, #2a0000);
-    padding: 20px;
-    border-radius: 10px;
+    min-height: 70vh;
+    padding: 50px;
+    border-radius: 12px;
     border: 1px solid #555;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    position: relative;
 }
 
 .title {
     color: red;
     font-weight: bold;
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.back-btn {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    background: #111;
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    background: red;
+    color: white;
+    border-color: red;
 }
 
 .grid {
@@ -52,6 +79,9 @@ body {
     border-radius: 50%;
     background: gray;
     margin-bottom: 10px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .btn {
@@ -61,12 +91,51 @@ body {
     border: none;
     margin-top: 10px;
     cursor: pointer;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background: #cc0000;
 }
 
 .stats {
     display: flex;
     justify-content: space-around;
     margin-top: 10px;
+    text-align: center;
+}
+
+.stats div {
+    flex: 1;
+}
+
+.stats h2 {
+    margin: 0;
+    color: #00aaff;
+    font-size: 2em;
+}
+
+ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+li {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>
 
@@ -74,37 +143,70 @@ body {
 <body>
 
 <?php
-// SAMPLE USER DATA
-$username = "Aquilla";
-$memberSince = "Jan 2026";
-$favGenre = "Action / Romance";
+// DATABASE CONNECTION (SAMPLE)
+function getUserData($user_id) {
+    // Sample data - replace with real database query
+    return [
+        'username' => 'Aquilla',
+        'member_since' => 'Jan 2026',
+        'fav_genre' => 'Action / Romance',
+        'avatar' => 'avatar.jpg',
+        'total_read' => 120,
+        'favorites' => 25,
+        'chapters_read' => 560
+    ];
+}
 
-// READING HISTORY
-$history = [
-    "Demon Slayer - Chapter 120",
-    "Attack on Titan - Chapter 80",
-    "Jujutsu Kaisen - Chapter 200"
-];
+// Get reading history
+function getReadingHistory($user_id, $limit = 3) {
+    // Sample data - replace with real database query
+    return [
+        "Demon Slayer - Chapter 120",
+        "Attack on Titan - Chapter 80",
+        "Jujutsu Kaisen - Chapter 200"
+    ];
+}
 
-// STATS
-$totalRead = 120;
-$favorites = 25;
-$chaptersRead = 560;
+// MAIN LOGIC
+$user_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
+$user_data = getUserData($user_id);
+$history = getReadingHistory($user_id);
+
+// Handle form actions
+if ($_POST['action'] ?? '' === 'edit_profile') {
+    // Process edit profile
+    header('Location: profile.php?id=' . $user_id . '&saved=1');
+    exit;
+}
+
+$message = '';
+if (isset($_GET['saved'])) {
+    $message = '<div style="color: #00ff00; padding: 10px; background: #004400; border-radius: 5px; margin-bottom: 20px;">Profile updated successfully!</div>';
+}
 ?>
 
 <div class="container">
-    <h2 class="title">PROFILE</h2>
+    <?php echo $message; ?>
+    
+    <h2 class="title">
+        <a href="dashboard.php" class="back-btn">← Back</a>
+        PROFILE
+    </h2>
 
     <div class="grid">
         
-        <!-- LEFT CARD -->
+        <!-- LEFT CARD - USER INFO -->
         <div class="card">
-            <div class="avatar"></div>
-            <h2><?php echo $username; ?></h2>
-            <p>Member Since: <?php echo $memberSince; ?></p>
-            <p>Favorite Genre: <?php echo $favGenre; ?></p>
+            <img src="images/<?php echo htmlspecialchars($user_data['avatar']); ?>" 
+                 class="avatar" alt="Avatar" onerror="this.style.background='gray'">
+            <h3><?php echo htmlspecialchars($user_data['username']); ?></h3>
+            <p>Member Since: <?php echo htmlspecialchars($user_data['member_since']); ?></p>
+            <p>Favorite Genre: <?php echo htmlspecialchars($user_data['fav_genre']); ?></p>
 
-            <button class="btn">EDIT PROFILE</button>
+            <form method="POST" style="display: inline;">
+                <input type="hidden" name="action" value="edit_profile">
+                <button type="submit" class="btn">EDIT PROFILE</button>
+            </form>
         </div>
 
         <!-- RIGHT SIDE -->
@@ -112,12 +214,16 @@ $chaptersRead = 560;
             
             <!-- TOP RIGHT (READING HISTORY) -->
             <div class="card right-top">
-                <h3>Reading History</h3>
-                <ul>
-                    <?php foreach($history as $manga){ ?>
-                        <li><?php echo $manga; ?></li>
-                    <?php } ?>
-                </ul>
+                <h3>Reading History (<?php echo count($history); ?>)</h3>
+                <?php if (empty($history)): ?>
+                    <p style="color: #888;">No reading history yet.</p>
+                <?php else: ?>
+                    <ul>
+                        <?php foreach(array_slice($history, 0, 5) as $manga): ?>
+                            <li><?php echo htmlspecialchars($manga); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             </div>
 
             <!-- BOTTOM RIGHT (STATS) -->
@@ -126,25 +232,22 @@ $chaptersRead = 560;
 
                 <div class="stats">
                     <div>
-                        <h2><?php echo $totalRead; ?></h2>
+                        <h2><?php echo number_format($user_data['total_read']); ?></h2>
                         <p>Manga Read</p>
                     </div>
 
                     <div>
-                        <h2><?php echo $favorites; ?></h2>
+                        <h2><?php echo number_format($user_data['favorites']); ?></h2>
                         <p>Favorites</p>
                     </div>
 
                     <div>
-                        <h2><?php echo $chaptersRead; ?></h2>
+                        <h2><?php echo number_format($user_data['chapters_read']); ?></h2>
                         <p>Chapters</p>
                     </div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
 </div>
 
