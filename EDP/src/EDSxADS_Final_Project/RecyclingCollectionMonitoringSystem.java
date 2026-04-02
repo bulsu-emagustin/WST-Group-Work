@@ -203,7 +203,6 @@ class UniversityRecycleZone extends JFrame {
                 ex.printStackTrace();
         }
         });
-            
             //Listeners for Contribution Dialog
             CancelButton.addActionListener(ev -> Contribution.dispose());
 
@@ -224,7 +223,7 @@ class UniversityRecycleZone extends JFrame {
     JButton searchBtn = new JButton("Search");
     searchBtn.setBounds(680, 13, 100, 35);
 
-    // Columns matching your specific SSMS table structure
+    // Columns
     String[] columns = {"Transaction ID", "Student No", "Material", "Quantity", "Department", "Date"};
     DefaultTableModel model = new DefaultTableModel(columns, 0);
     JTable Table = new JTable(model);
@@ -270,10 +269,9 @@ class UniversityRecycleZone extends JFrame {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(History, "Error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(History, "Connection Error");
         }
     });
-
     History.add(TableS);
     History.add(SIDL);
     History.add(searchField);
@@ -356,19 +354,52 @@ class UniversityRecycleZone extends JFrame {
                 Passworfield.setBounds(115, 110, 285, 30);
                 Login.add(Passworfield);
 
-                //Clear Password Button
-                ClearButton = new JButton("Clear");
-                ClearButton.setBounds(410, 110, 80, 30);
-                Login.add(ClearButton);
-
-                //Enter Button
+                // Enter Button Logic for Admin Login
                 EnterButton = new JButton("Enter");
                 EnterButton.setBounds(150, 180, 100, 40);
+
                 EnterButton.addActionListener(ev -> {
+                String user = Usernamefield.getText().trim();
+                String pass = Passworfield.getText().trim();
+
+                // 1. Basic Validation
+                if (user.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(Login, "Please enter both Username and Password.", "Login Error", JOptionPane.WARNING_MESSAGE);
+                return;
+                }
+
+                // 2. Database Connection and Verification
+                try (Connection con = DBConnection.getConnection()) {
+                if (con == null) {
+                JOptionPane.showMessageDialog(Login, "Could not connect to Database.", "Connection Error", JOptionPane.ERROR_MESSAGE);
+                return;
+                }
+
+                // Query the Admins table
+                String sql = "SELECT * FROM Admins WHERE Username = ? AND Password = ?";
+                PreparedStatement pst = con.prepareStatement(sql);
+                pst.setString(1, user);
+                pst.setString(2, pass);
+
+                ResultSet rs = pst.executeQuery();
+
+                if (rs.next()) {
+                    // Login Successful
+                    JOptionPane.showMessageDialog(Login, "Welcome, " + user + "!", "Login Success", JOptionPane.INFORMATION_MESSAGE);
                     new AdminFrame();
                     Login.dispose();
                     MainF.dispose();
-                });
+                } else {
+                    // Login Failed
+                    JOptionPane.showMessageDialog(Login, "Invalid Username or Password.", "Access Denied", JOptionPane.ERROR_MESSAGE);
+                    Passworfield.setText(""); // Clear password field for retry
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(Login, "System Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
                 Login.add(EnterButton);
 
                 //Cancel Button
