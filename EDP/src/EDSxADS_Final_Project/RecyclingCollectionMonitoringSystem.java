@@ -358,60 +358,43 @@ class UniversityRecycleZone extends JFrame {
                 EnterButton = new JButton("Enter");
                 EnterButton.setBounds(150, 180, 100, 40);
 
-                EnterButton.addActionListener(ev -> {
-                String user = Usernamefield.getText().trim();
-                String pass = Passworfield.getText().trim();
+                // Login Logic
+                EnterButton.addActionListener((var ev) -> {
+                    String user = Usernamefield.getText().trim();
+                    String pass = Passworfield.getText();
 
-                // 1. Basic Validation
-                if (user.isEmpty() || pass.isEmpty()) {
-                JOptionPane.showMessageDialog(Login, "Please enter both Username and Password.", "Login Error", JOptionPane.WARNING_MESSAGE);
-                return;
-                }
+                    try (Connection con = DBConnection.getConnection()) {
+                        String sql = "SELECT * FROM Admins WHERE Username = ? AND Password = ?";
+                        PreparedStatement pst = con.prepareStatement(sql);
+                        pst.setString(1, user);
+                        pst.setString(2, pass);
+                        ResultSet rs = pst.executeQuery();
 
-                // 2. Database Connection and Verification
-                try (Connection con = DBConnection.getConnection()) {
-                if (con == null) {
-                JOptionPane.showMessageDialog(Login, "Could not connect to Database.", "Connection Error", JOptionPane.ERROR_MESSAGE);
-                return;
-                }
+                        if (rs.next()) {
+                            JOptionPane.showMessageDialog(Login, "Welcome Admin!");
+                            new AdminFrame(); // Ensure this class exists
+                            Login.dispose();
+                            MainF.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(Login, "Invalid User/Pass", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (Exception ex) { ex.printStackTrace(); }
+                });
 
-                // Query the Admins table
-                String sql = "SELECT * FROM Admins WHERE Username = ? AND Password = ?";
-                PreparedStatement pst = con.prepareStatement(sql);
-                pst.setString(1, user);
-                pst.setString(2, pass);
+                clearUser.addActionListener(ev -> {
+                    Usernamefield.setText("");
+                    Passworfield.setText("");
+                });
 
-                ResultSet rs = pst.executeQuery();
-
-                if (rs.next()) {
-                    // Login Successful
-                    JOptionPane.showMessageDialog(Login, "Welcome, " + user + "!", "Login Success", JOptionPane.INFORMATION_MESSAGE);
-                    new AdminFrame();
-                    Login.dispose();
-                    MainF.dispose();
-                } else {
-                    // Login Failed
-                    JOptionPane.showMessageDialog(Login, "Invalid Username or Password.", "Access Denied", JOptionPane.ERROR_MESSAGE);
-                    Passworfield.setText(""); // Clear password field for retry
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(Login, "System Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+                
                 Login.add(EnterButton);
 
                 //Cancel Button
                 CancelButton = new JButton("Cancel");
                 CancelButton.setBounds(270, 180, 100, 40);
                 Login.add(CancelButton);
-
-                //Logic
-                clearUser.addActionListener(ev -> Usernamefield.setText(""));
-                ClearButton.addActionListener(ev -> Passworfield.setText(""));
                 CancelButton.addActionListener(ev -> Login.dispose());
-                CancelButton.addActionListener(ev -> Contribution.dispose());
+                
 
                 Login.setVisible(true);
             });
