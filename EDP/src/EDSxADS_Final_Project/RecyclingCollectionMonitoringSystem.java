@@ -17,6 +17,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.sql.ResultSet;
+
 public class RecyclingCollectionMonitoringSystem {
 
     //Main Method (DIto palagi magrun ng code)
@@ -153,7 +159,52 @@ class UniversityRecycleZone extends JFrame {
             Contribution.add(Quantityfield);
             Contribution.add(EnterButton);
             Contribution.add(CancelButton);
+            
+            EnterButton.addActionListener(ev -> {
+            try {
+            // Validation
+            if (IDfield.getText().isEmpty() || Quantityfield.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(Contribution, "Please fill all fields!", "Input Error", JOptionPane.WARNING_MESSAGE);
+            return;
+            }
 
+            // Connect to DB
+            Connection con = DBConnection.getConnection();
+            if (con == null) {
+            JOptionPane.showMessageDialog(Contribution, "Connection Failed!", "", JOptionPane.ERROR_MESSAGE);
+            return;
+            }
+            
+            // SQL Insert
+            String sql = "INSERT INTO Contributions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
+            PreparedStatement pst = con.prepareStatement(sql);
+
+            pst.setInt(1, Integer.parseInt(IDfield.getText()));
+            pst.setString(2, MTypeBox.getSelectedItem().toString());
+            pst.setInt(3, Integer.parseInt(Quantityfield.getText()));
+
+            // Execute
+            int rows = pst.executeUpdate();
+
+            if (rows > 0) {
+            JOptionPane.showMessageDialog(Contribution, "Contribution successfully saved", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+            // Clear fields after insert
+            IDfield.setText("");
+            Quantityfield.setText("");
+
+            Contribution.dispose(); // close dialog
+            }
+
+            con.close();
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(Contribution, "Invalid Input: School ID and Quantity must be whole numbers.", "Format Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+        }
+        });
+            
             //Listeners for Contribution Dialog
             CancelButton.addActionListener(ev -> Contribution.dispose());
 
@@ -162,27 +213,120 @@ class UniversityRecycleZone extends JFrame {
         });
 
         //View Contribution
+        // --- ADD CONTRIBUTION DIALOG LOGIC ---
+        AddContriButton.addActionListener(e -> {
+            Contribution.setSize(500, 350);
+            Contribution.setLocationRelativeTo(this);
+            Contribution.setLayout(null);
+            
+            // (UI Components Setup: SIDL, IDfield, MTypeBox, etc.)
+            // ... [Your existing UI positioning code for Contribution dialog]
+
+            EnterButton.addActionListener(ev -> {
+                try {
+                    // 1. Validation
+                    if (IDfield.getText().trim().isEmpty() || Quantityfield.getText().trim().isEmpty()) {
+                        JOptionPane.showMessageDialog(Contribution, "Please fill all fields!", "Input Error", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    // 2. Database Connection
+                    Connection con = DBConnection.getConnection();
+                    if (con == null) {
+                        JOptionPane.showMessageDialog(Contribution, "Database Connection Failed!", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // 3. SQL Insert (Matching SSMS exactly)
+                    String sql = "INSERT INTO Contributions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
+                    PreparedStatement pst = con.prepareStatement(sql);
+
+                    pst.setInt(1, Integer.parseInt(IDfield.getText().trim()));
+                    pst.setString(2, MTypeBox.getSelectedItem().toString());
+                    pst.setInt(3, Integer.parseInt(Quantityfield.getText().trim()));
+
+                    // 4. Execute and Feedback
+                    int rows = pst.executeUpdate();
+                    if (rows > 0) {
+                        JOptionPane.showMessageDialog(Contribution, "Contribution successfully saved!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        IDfield.setText("");
+                        Quantityfield.setText("");
+                        Contribution.dispose();
+                    }
+                    con.close();
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(Contribution, "Please enter numbers for ID and Quantity.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(Contribution, "Error: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            CancelButton.addActionListener(ev -> Contribution.dispose());
+            Contribution.setVisible(true);
+        });
+
+        // --- VIEW CONTRIBUTION / SEARCH LOGIC ---
         ViewContriButton.addActionListener(e -> {
             History.setSize(733, 400);
             History.setLocationRelativeTo(this);
             History.setLayout(null);
-            SIDL = new JLabel("School ID: ");
-            SIDL.setBounds(300, 13, 100, 35);
-            IDfield = new JTextField(50);
-            IDfield.setBounds(360, 13, 250, 35);
-            SearchButton = new JButton("Search");
-            SearchButton.setBounds(609, 13, 100, 35);
-            Table = new JTable(Values, Atributes);
-            Table.getTableHeader().setReorderingAllowed(false);
-            TableS = new JScrollPane(Table);
-            TableS.setBounds(10, 60, 700, 300);
 
-            //Adding Components
-            History.add(TableS);
-            History.add(SIDL);
-            History.add(IDfield);
-            History.add(SearchButton);
+            // UI Setup for Search
+            JLabel searchLbl = new JLabel("School ID: ");
+            searchLbl.setBounds(300, 13, 100, 35);
+            JTextField searchField = new JTextField(50);
+            searchField.setBounds(360, 13, 250, 35);
+            JButton searchBtn = new JButton("Search");
+            searchBtn.setBounds(609, 13, 100, 35);
 
+            // Table Setup with Result Set Model
+            String[] columns = {"Student ID", "Material Type", "Quantity"};
+            DefaultTableModel model = new DefaultTableModel(columns, 0);
+            JTable resultsTable = new JTable(model);
+            JScrollPane scrollPane = new JScrollPane(resultsTable);
+            scrollPane.setBounds(10, 60, 700, 300);
+
+            // Search Button Functionality
+            searchBtn.addActionListener(searchEv -> {
+                String idToSearch = searchField.getText().trim();
+                if (idToSearch.isEmpty()) {
+                    JOptionPane.showMessageDialog(History, "Enter a Student ID to search.");
+                    return;
+                }
+
+                try (Connection con = DBConnection.getConnection()) {
+                    String query = "SELECT StudentNo, MaterialType, Quantity FROM Contributions WHERE StudentNo = ?";
+                    PreparedStatement pst = con.prepareStatement(query);
+                    pst.setString(1, idToSearch);
+
+                    ResultSet rs = pst.executeQuery();
+                    model.setRowCount(0); // Clear old results
+
+                    boolean hasData = false;
+                    while (rs.next()) {
+                        hasData = true;
+                        model.addRow(new Object[]{
+                            rs.getInt("StudentNo"),
+                            rs.getString("MaterialType"),
+                            rs.getInt("Quantity")
+                        });
+                    }
+
+                    if (!hasData) {
+                        JOptionPane.showMessageDialog(History, "No records found for ID: " + idToSearch);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(History, "Search Error: " + ex.getMessage());
+                }
+            });
+
+            History.add(scrollPane);
+            History.add(searchLbl);
+            History.add(searchField);
+            History.add(searchBtn);
             History.setVisible(true);
         });
         
