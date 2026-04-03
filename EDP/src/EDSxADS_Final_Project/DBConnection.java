@@ -1,9 +1,11 @@
 package EDSxADS_Final_Project;
 
-import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+
 import javax.swing.JOptionPane;
 
 public class DBConnection {
@@ -17,61 +19,69 @@ public class DBConnection {
         try (Connection conn = DriverManager.getConnection(BASE_URL, USER, PASS);
              Statement stmt = conn.createStatement()) {
 
-            // Create Database
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + DB_NAME);
             stmt.executeUpdate("USE " + DB_NAME);
 
-            // Create Tables
-            String sqlAdmins = "CREATE TABLE IF NOT EXISTS Admins (Username VARCHAR(100) PRIMARY KEY, Password INT)";
-            
+            // Create Admins Table
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Admins (" +
+                               "Username VARCHAR(100) PRIMARY KEY, " +
+                               "Password INT)");
+
+            // Create Registered Table
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Students (" +
+                               "StudentNo INT PRIMARY KEY, " +
+                               "Department VARCHAR(100))");
+
+            // Create Transactions Table 
             String sqlTransactions = "CREATE TABLE IF NOT EXISTS Transactions (" +
-                         "TransactionID INT AUTO_INCREMENT PRIMARY KEY, " +
-                         "StudentNo INT NOT NULL, " +
-                         "MaterialType VARCHAR(50) NOT NULL, " +
-                         "Quantity INT NOT NULL, " +
-                         "Department VARCHAR(100) DEFAULT 'Information Technology', " +
-                         "CollectionDate DATETIME DEFAULT CURRENT_TIMESTAMP" +
-                         ")";
-            
-            String TransacValue = " INSERT IGNORE INTO Transactions (StudentNo, MaterialType, Quantity) VALUES"
-                                    + "(2024104677, 'Plastic', 12),"
-                                    + "(2024104677, 'Plastic', 20)," 
-                                    + "(2024104677, 'Paper', 32)," 
-                                    + "(2024104677, 'Paper', 90)," 
-                                    + "(2024104678, 'Metal', 2)," 
-                                    + "(2024104678, 'Metal', 3)," 
-                                    + "(2024104678, 'Glass', 12)," 
-                                    + "(2024104679, 'Organic', 30)," 
-                                    + "(2024104679, 'E-Waste', 3)," 
-                                    + "(2024104679, 'Textile', 19);";
-            
-            stmt.executeUpdate(sqlAdmins);
+                                     "TransactionID INT AUTO_INCREMENT PRIMARY KEY, " +
+                                     "StudentNo INT NOT NULL, " +
+                                     "MaterialType VARCHAR(50) NOT NULL, " +
+                                     "Quantity INT NOT NULL, " +
+                                     "Department VARCHAR(100) DEFAULT 'Information Technology', " +
+                                     "CollectionDate DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                                     "CONSTRAINT fk_student FOREIGN KEY (StudentNo) " +
+                                     "REFERENCES Registered(StudentNo) ON DELETE CASCADE ON UPDATE CASCADE)";
             stmt.executeUpdate(sqlTransactions);
-            stmt.executeUpdate(TransacValue);
-            
-            // Permissions
-            stmt.executeUpdate("GRANT SELECT, INSERT ON Recycling.* TO 'contributor_user'@'localhost'");
 
-            // Initial Data
-            stmt.executeUpdate("INSERT IGNORE INTO Admins (Username, Password) VALUES ('Akira', 1234), ('Ernest', 1234)");
+            // We MUST add students here first, or the Transaction inserts will FAIL.
+            if (!hasData(stmt, "Students")) {
+                stmt.executeUpdate("INSERT INTO Students (StudentNo, Department) VALUES " +
+                                   "(2024104677, 'Information Technology'), " +
+                                   "(2024104678, 'Computer Science'), " +
+                                   "(2024104679, 'Engineering')");
+            }
 
-            System.out.println("Database Initialized Successfully.");
+            // Initial Data Handler for Transactions
+            if (!hasData(stmt, "Transactions")) {
+                String TransacValue = "INSERT INTO Transactions (StudentNo, MaterialType, Quantity) VALUES "
+                        + "(2024104677, 'Plastic', 12), "
+                        + "(2024104677, 'Plastic', 20), "
+                        + "(2024104677, 'Paper', 32), "
+                        + "(2024104678, 'Metal', 2), "
+                        + "(2024104679, 'Textile', 19)";
+                stmt.executeUpdate(TransacValue);
+            }
+
+            System.out.println("Database Initialized with Relationships.");
 
         } catch (SQLException se) {
             se.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Critical: Could not initialize database.\n" + se.getMessage());
+            JOptionPane.showMessageDialog(null, "Database Error: " + se.getMessage());
         }
     }
     
+    //Safety check for duplication of value
+    private static boolean hasData(Statement stmt, String tableName) throws SQLException {
+        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName);
+        return rs.next() && rs.getInt(1) > 0;
+    }
+
     public static Connection getConnection() {
         try {
-            // We include the DB_NAME in the URL here so we don't have to call 'USE' every time
             return DriverManager.getConnection(BASE_URL + DB_NAME, USER, PASS);
         } catch (SQLException e) {
-            e.printStackTrace();
             return null;
         }
     }
 }
-    
-
