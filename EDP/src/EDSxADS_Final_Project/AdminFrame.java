@@ -1,5 +1,6 @@
 package EDSxADS_Final_Project;
 
+// UI and Layout Imports
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -7,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
+
+// Swing Component Imports
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,10 +21,21 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
-class AdminFrame extends JFrame {
+// Event Handling Imports
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-    //Viables
+// Database and SQL Imports
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class AdminFrame extends JFrame {
+
+    // Variables (Preserved exactly)
     JFrame AdminF;
     JPanel mainheader, header, UnivImageP, customMenuBar, mainPanel, panel1, panel2, RecordP, subheader, dashboardP, plasticP, glassP, paperP, metalP, EWasteP, DepartmentDP;
     JTextField IDfield;
@@ -38,7 +52,7 @@ class AdminFrame extends JFrame {
     JComboBox<String> DTypeBox, MTypeBox;
 
     public AdminFrame() {
-        //Containers
+        // Containers & Arrays
         AdminF = new JFrame("University Recycle Zone");
         mainheader = new JPanel();
         header = new JPanel();
@@ -49,10 +63,10 @@ class AdminFrame extends JFrame {
         customMenuBar = new JPanel();
         RecordP = new JPanel();
         subheader = new JPanel();
+        
         String[] DType = {"Information Technology", "Civil Engineering", "Business Administration", "Entrepreneurship", "Education", "Medical Technology", "Criminology"};
         String[] MType = {"Plastic", "Glass", "Paper", "Metal", "E-Waste"};
-        String[] Atributes = {"Student ID", "Department", "Material Type", "Quantity", "Transaction", "Date"};
-        String[][] Values = {};
+        
         dashboardP = new JPanel();
         plasticP = new JPanel();
         glassP = new JPanel();
@@ -60,27 +74,28 @@ class AdminFrame extends JFrame {
         metalP = new JPanel();
         EWasteP = new JPanel();
         DepartmentDP = new JPanel();
+        
         DonutChartPanel plasticChart = new DonutChartPanel(40, Color.GREEN, "Plastic");
         DonutChartPanel glassChart = new DonutChartPanel(20, Color.CYAN, "Glass");
         DonutChartPanel paperChart = new DonutChartPanel(15, Color.YELLOW, "Paper");
         DonutChartPanel metalChart = new DonutChartPanel(10, Color.GRAY, "Metal");
         DonutChartPanel ewasteChart = new DonutChartPanel(15, Color.RED, "E-Waste");
+        
         RegisterD = new JDialog();
         DeleteD = new JDialog();
 
-        //Background Image for Panel 1
+        // Backgrounds
         AMainBack1 = new ImageIcon("Admin_Background.jpg");
         JLabel AMbackground1 = new JLabel(AMainBack1);
         AMbackground1.setLayout(null);
         AMbackground1.setBounds(0, 0, 1500, 625);
 
-        //Background Image for Panel 2
         AMainBack2 = new ImageIcon("Admin_Background.jpg");
         JLabel AMbackground2 = new JLabel(AMainBack2);
         AMbackground2.setLayout(null);
         AMbackground2.setBounds(0, 0, 1500, 625);
 
-        //Layout
+        // Layouts
         AdminF.setLayout(new BorderLayout());
         mainheader.setLayout(new BorderLayout());
         customMenuBar.setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -89,13 +104,8 @@ class AdminFrame extends JFrame {
         RecordP.setLayout(new BorderLayout());
         subheader.setLayout(null);
         dashboardP.setLayout(null);
-        plasticP.setLayout(new BorderLayout());
-        glassP.setLayout(new BorderLayout());
-        paperP.setLayout(new BorderLayout());
-        metalP.setLayout(new BorderLayout());
-        EWasteP.setLayout(new BorderLayout());
-
-        //Header Config
+        
+        // Header Config
         header.setBackground(new Color(34, 139, 34));
         header.setPreferredSize(new Dimension(1500, 90));
         header.setLayout(null);
@@ -110,7 +120,6 @@ class AdminFrame extends JFrame {
         UniversityL.setBounds(61, 20, 500, 50);
         UniversityL.setFont(new Font("Arial Black", Font.BOLD, 30));
 
-        //Logout Button
         AdminL = new JLabel("ADMIN");
         AdminL.setBounds(1240, 25, 120, 40);
         AdminL.setFont(new Font("Bodoni MT", Font.BOLD, 30));
@@ -119,54 +128,57 @@ class AdminFrame extends JFrame {
         AdminButton.setFont(new Font("Arial Black", Font.BOLD, 20));
         AdminButton.setBounds(1350, 20, 120, 50);
 
-        //CardLayout
+        // CardLayout Setup
         CardLayout cl = new CardLayout();
         mainPanel = new JPanel(cl);
 
-        //Custom Menu bar
+        // Menu Bar
         customMenuBar.setBackground(Color.LIGHT_GRAY);
         customMenuBar.setPreferredSize(new Dimension(1500, 50));
         RecordButton = new JButton("Records");
-        RecordButton.setPreferredSize(new Dimension(100, 40));
         RegisterButton = new JButton("Register");
-        RegisterButton.setPreferredSize(new Dimension(100, 40));
         RemoveButton = new JButton("Remove");
-        RemoveButton.setPreferredSize(new Dimension(100, 40));
         DashboardButton = new JButton("Dashboard");
-        DashboardButton.setPreferredSize(new Dimension(100, 40));
 
-        //Panel 1
-        TitleL = new JLabel("Recyling Collection Monitoring System");
+        // Panel 1 (Records)
+        TitleL = new JLabel("Recycling Collection Monitoring System");
         TitleL.setFont(new Font("Bell MT", Font.BOLD, 50));
         TitleL.setBounds(310, 0, 1000, 100);
         RecordP.setBounds(150, 100, 1180, 700);
         subheader.setBackground(Color.white);
         subheader.setPreferredSize(new Dimension(50, 60));
+        
         DepartmentL = new JLabel("Department: ");
         DepartmentL.setBounds(30, 10, 100, 30);
         DTypeBox = new JComboBox<>(DType);
         DTypeBox.setBounds(105, 10, 170, 30);
+        
         MTypeL = new JLabel("Material Type: ");
         MTypeL.setBounds(310, 10, 200, 30);
         MTypeBox = new JComboBox<>(MType);
         MTypeBox.setBounds(395, 10, 100, 30);
+        
         UnivIDL = new JLabel("ID: ");
         UnivIDL.setBounds(860, 10, 30, 30);
         IDfield = new JTextField(50);
         IDfield.setBounds(880, 10, 200, 30);
+        
         SearchButton = new JButton("Search");
-        SearchButton.setFont(new Font("Arial", Font.BOLD, 15));
         SearchButton.setBounds(1080, 10, 90, 30);
-        Table = new JTable(Values, Atributes);
+        
+        // Initialize Table with Model
+        DefaultTableModel model = new DefaultTableModel(Atributes, 0);
+        Table = new JTable(model);
         Table.getTableHeader().setReorderingAllowed(false);
         TableS = new JScrollPane(Table);
 
-        //Panel 2
+        // Panel 2 (Dashboard)
         DashT = new JLabel("Dashboard");
         DashT.setFont(new Font("Bell MT", Font.BOLD, 50));
         DashT.setBounds(50, 0, 1000, 100);
         dashboardP.setBackground(Color.white);
         dashboardP.setBounds(50, 100, 1385, 500);
+        
         plasticP.setBounds(10, 35, 250, 200);
         glassP.setBounds(270, 35, 250, 200);
         paperP.setBounds(530, 35, 250, 200);
@@ -174,147 +186,206 @@ class AdminFrame extends JFrame {
         EWasteP.setBounds(400, 270, 250, 200);
         DepartmentDP.setBounds(800, 10, 570, 480);
 
-        //Logout Button Function
+        // --- BUTTON ACTION LISTENERS USING NAMED CLASSES ---
+
+        // Navigation
+        RecordButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel1"));
+        DashboardButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel2"));
+        
+        // Logout
         AdminButton.addActionListener(e -> {
-
-            int respone = JOptionPane.showConfirmDialog(null, "Are you sure you want to Logout?", "Logout Confirmation",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-
-            if (respone == JOptionPane.YES_NO_OPTION) {
+            int response = JOptionPane.showConfirmDialog(null, "Logout?", "Confirm", JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.YES_OPTION) {
+                AdminF.dispose();
                 new UniversityRecycleZone();
             }
         });
 
-        //Register Button Function
+        // Search
+        SearchButton.addActionListener(new SearchRecords(IDfield, MTypeBox, Table));
+
+        // Register Dialog Trigger
         RegisterButton.addActionListener(e -> {
+            RegisterD = new JDialog(AdminF, "Register Student", true);
             RegisterD.setSize(500, 315);
             RegisterD.setLocationRelativeTo(null);
             RegisterD.setLayout(null);
+            
             RegisterL = new JLabel("Register Student");
             RegisterL.setFont(new Font("Arial", Font.BOLD, 20));
             RegisterL.setBounds(165, 10, 300, 50);
+            
             StudentID = new JLabel("Student ID: ");
             StudentID.setBounds(50, 60, 100, 50);
-            IDfield = new JTextField(50);
-            IDfield.setBounds(120, 70, 300, 30);
+            JTextField regID = new JTextField(); // Dialog specific ID field
+            regID.setBounds(120, 70, 300, 30);
+            
             DepartmentL = new JLabel("Department: ");
-            DepartmentL.setBounds(45, 5, 300, 300);
-            DTypeBox = new JComboBox<>(DType);
-            DTypeBox.setBounds(120, 140, 300, 30);
+            DepartmentL.setBounds(45, 130, 100, 50);
+            JComboBox<String> regDept = new JComboBox<>(DType);
+            regDept.setBounds(120, 140, 300, 30);
+            
             AddButton = new JButton("Add Student");
             AddButton.setBounds(80, 200, 150, 50);
+            AddButton.addActionListener(new AddStudent(RegisterD, regID, regDept));
+            
             CancelButton = new JButton("Cancel");
             CancelButton.setBounds(250, 200, 150, 50);
-
-            RegisterD.setVisible(true);
-
             CancelButton.addActionListener(ev -> RegisterD.dispose());
 
-            //Adding Components
-            RegisterD.add(RegisterL);
-            RegisterD.add(StudentID);
-            RegisterD.add(IDfield);
-            RegisterD.add(DepartmentL);
-            RegisterD.add(DTypeBox);
-            RegisterD.add(AddButton);
-            RegisterD.add(CancelButton);
+            RegisterD.add(RegisterL); RegisterD.add(StudentID); RegisterD.add(regID);
+            RegisterD.add(DepartmentL); RegisterD.add(regDept); 
+            RegisterD.add(AddButton); RegisterD.add(CancelButton);
+            RegisterD.setVisible(true);
         });
 
+        // Remove Dialog Trigger
         RemoveButton.addActionListener(e -> {
+            DeleteD = new JDialog(AdminF, "Remove Student", true);
             DeleteD.setSize(500, 250);
             DeleteD.setLocationRelativeTo(null);
             DeleteD.setLayout(null);
+            
             RemoveL = new JLabel("Remove Student");
             RemoveL.setFont(new Font("Arial", Font.BOLD, 20));
             RemoveL.setBounds(165, 10, 300, 50);
+            
             StudentID = new JLabel("Student ID: ");
             StudentID.setBounds(50, 60, 100, 50);
-            IDfield = new JTextField(50);
-            IDfield.setBounds(120, 70, 300, 30);
-            RemoveButton = new JButton("Remove Student");
-            RemoveButton.setBounds(80, 130, 150, 50);
+            JTextField delID = new JTextField();
+            delID.setBounds(120, 70, 300, 30);
+            
+            ConfirmRemoveBtn = new JButton("Remove Student");
+            ConfirmRemoveBtn.setBounds(80, 130, 150, 50);
+            ConfirmRemoveBtn.addActionListener(new RemoveStudent(DeleteD, delID));
+            
             CancelButton = new JButton("Cancel");
             CancelButton.setBounds(250, 130, 150, 50);
-            
             CancelButton.addActionListener(ev -> DeleteD.dispose());
 
-            //Adding Components
-            DeleteD.add(RemoveL);
-            DeleteD.add(StudentID);
-            DeleteD.add(IDfield);
-            DeleteD.add(RemoveButton);
-            DeleteD.add(CancelButton);
-
+            DeleteD.add(RemoveL); DeleteD.add(StudentID); DeleteD.add(delID);
+            DeleteD.add(ConfirmRemoveBtn); DeleteD.add(CancelButton);
             DeleteD.setVisible(true);
         });
 
-        //sample data
-        String[] departments = {
-            "IT", "Engineering", "Business", "Education", "Medical", "Criminology"
-        };
-
-        double[] values = {25, 20, 15, 10, 20, 10};
-
-        Color[] colors = {
-            Color.BLUE, Color.GREEN, Color.ORANGE,
-            Color.MAGENTA, Color.CYAN, Color.PINK
-        };
-
-        PieChartPanel pieChart = new PieChartPanel(departments, values, colors);
-
+        // Dashboard Sample Data (Pie Chart)
+        String[] depts = {"IT", "Engineering", "Business", "Education", "Medical", "Criminology"};
+        double[] vals = {25, 20, 15, 10, 20, 10};
+        Color[] cols = {Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN, Color.PINK};
+        PieChartPanel pieChart = new PieChartPanel(depts, vals, cols);
         DepartmentDP.setLayout(new BorderLayout());
         DepartmentDP.add(pieChart, BorderLayout.CENTER);
 
-        //Adding Components
+        // Adding Components to Panels
         AdminF.add(mainheader, BorderLayout.NORTH);
         mainheader.add(header, BorderLayout.NORTH);
         mainheader.add(customMenuBar, BorderLayout.CENTER);
-        customMenuBar.add(RecordButton);
-        customMenuBar.add(RegisterButton);
-        customMenuBar.add(RemoveButton);
-        customMenuBar.add(DashboardButton);
+        customMenuBar.add(RecordButton); customMenuBar.add(RegisterButton);
+        customMenuBar.add(RemoveButton); customMenuBar.add(DashboardButton);
+        
         AdminF.add(mainPanel, BorderLayout.CENTER);
         mainPanel.add(panel1, "panel1");
         panel1.add(AMbackground1);
-        AMbackground1.add(TitleL);
-        AMbackground1.add(RecordP);
+        AMbackground1.add(TitleL); AMbackground1.add(RecordP);
         RecordP.add(subheader, BorderLayout.NORTH);
-        subheader.add(DepartmentL);
-        subheader.add(DTypeBox);
-        subheader.add(MTypeL);
-        subheader.add(MTypeBox);
-        subheader.add(UnivIDL);
-        subheader.add(IDfield);
-        subheader.add(SearchButton);
+        subheader.add(DepartmentL); subheader.add(DTypeBox);
+        subheader.add(MTypeL); subheader.add(MTypeBox);
+        subheader.add(UnivIDL); subheader.add(IDfield); subheader.add(SearchButton);
         RecordP.add(TableS, BorderLayout.CENTER);
+        
         mainPanel.add(panel2, "panel2");
         panel2.add(AMbackground2);
-        AMbackground2.add(DashT);
-        AMbackground2.add(dashboardP);
-        dashboardP.add(plasticP);
-        dashboardP.add(glassP);
-        dashboardP.add(paperP);
-        dashboardP.add(metalP);
-        dashboardP.add(EWasteP);
-        dashboardP.add(DepartmentDP);
+        AMbackground2.add(DashT); AMbackground2.add(dashboardP);
+        dashboardP.add(plasticP); dashboardP.add(glassP); dashboardP.add(paperP);
+        dashboardP.add(metalP); dashboardP.add(EWasteP); dashboardP.add(DepartmentDP);
+        
         plasticP.add(plasticChart, BorderLayout.CENTER);
         glassP.add(glassChart, BorderLayout.CENTER);
         paperP.add(paperChart, BorderLayout.CENTER);
         metalP.add(metalChart, BorderLayout.CENTER);
         EWasteP.add(ewasteChart, BorderLayout.CENTER);
-        header.add(UnivImageP);
-        UnivImageP.add(UnivIcon);
-        header.add(UniversityL);
-        header.add(AdminL);
-        header.add(AdminButton);
+        
+        header.add(UnivImageP); UnivImageP.add(UnivIcon);
+        header.add(UniversityL); header.add(AdminL); header.add(AdminButton);
 
-        RecordButton.addActionListener(e -> cl.show(mainPanel, "panel1"));
-        DashboardButton.addActionListener(e -> cl.show(mainPanel, "panel2"));
-
-        //Frame Settings
+        // Final Frame Settings
         AdminF.setSize(1500, 800);
         AdminF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AdminF.setLocationRelativeTo(null);
         AdminF.setVisible(true);
+    }
+
+    class PanelSwitcher implements ActionListener {
+        private JPanel mainPanel;
+        private CardLayout cl;
+        private String target;
+        public PanelSwitcher(JPanel mp, CardLayout c, String t) { this.mainPanel = mp; this.cl = c; this.target = t; }
+        public void actionPerformed(ActionEvent e) { cl.show(mainPanel, target); }
+    }
+
+    class AddStudent implements ActionListener {
+        
+        private JDialog parent;
+        private JTextField idF;
+        private JComboBox<String> dBox;
+        
+        public AddStudent(JDialog p, JTextField i, JComboBox<String> d) { this.parent = p; this.idF = i; this.dBox = d; }
+        public void actionPerformed(ActionEvent e) {
+            
+            try (Connection con = DBConnection.getConnection()) {
+                PreparedStatement pst = con.prepareStatement("INSERT INTO Students (StudentNo, Department) VALUES (?, ?)");
+                pst.setInt(1, Integer.parseInt(idF.getText().trim()));
+                pst.setString(2, dBox.getSelectedItem().toString());
+                if (pst.executeUpdate() > 0) {
+                    JOptionPane.showMessageDialog(parent, "Student Registered!");
+                    parent.dispose();
+                }
+            } catch (Exception ex) { JOptionPane.showMessageDialog(parent, "Error: " + ex.getMessage()); }
+        }
+    }
+
+    class RemoveStudent implements ActionListener {
+        
+        private JDialog parent;
+        private JTextField idF;
+        
+        public RemoveStudent(JDialog p, JTextField i) { this.parent = p; this.idF = i; }
+        public void actionPerformed(ActionEvent e) {
+            
+            int confirm = JOptionPane.showConfirmDialog(parent, "Delete student and all related records?", "Confirm", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                try (Connection con = DBConnection.getConnection()) {
+                    PreparedStatement pst = con.prepareStatement("DELETE FROM Students WHERE StudentNo = ?");
+                    pst.setInt(1, Integer.parseInt(idF.getText().trim()));
+                    if (pst.executeUpdate() > 0) {
+                        JOptionPane.showMessageDialog(parent, "Record Deleted.");
+                        parent.dispose();
+                    }
+                } catch (Exception ex) { JOptionPane.showMessageDialog(parent, "Error: " + ex.getMessage()); }
+            }
+        }
+    }
+
+    class SearchRecords implements ActionListener {
+        private JTextField idF;
+        private JComboBox<String> mBox;
+        private JTable table;
+        public SearchRecords(JTextField i, JComboBox<String> m, JTable t) { this.idF = i; this.mBox = m; this.table = t; }
+        public void actionPerformed(ActionEvent e) {
+            String id = idF.getText().trim();
+            String mat = mBox.getSelectedItem().toString();
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            try (Connection con = DBConnection.getConnection()) {
+                String sql = "SELECT * FROM Transactions WHERE (StudentNo = ? OR ? = '') AND MaterialType = ?";
+                PreparedStatement pst = con.prepareStatement(sql);
+                pst.setString(1, id); pst.setString(2, id); pst.setString(3, mat);
+                ResultSet rs = pst.executeQuery();
+                model.setRowCount(0);
+                while (rs.next()) {
+                    model.addRow(new Object[]{rs.getInt("StudentNo"), rs.getString("Department"), 
+                        rs.getString("MaterialType"), rs.getInt("Quantity"), rs.getInt("TransactionID"), rs.getTimestamp("CollectionDate")});
+                }
+            } catch (SQLException ex) { ex.printStackTrace(); }
+        }
     }
 }
