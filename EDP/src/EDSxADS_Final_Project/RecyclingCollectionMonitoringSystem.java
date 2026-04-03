@@ -22,6 +22,8 @@ import java.sql.PreparedStatement;
 import javax.swing.JOptionPane;
 import java.sql.ResultSet;
 import javax.swing.table.DefaultTableModel;
+import java.sql.SQLException;
+
 public class RecyclingCollectionMonitoringSystem {
 
     //Main Method (DIto palagi magrun ng code)
@@ -47,7 +49,8 @@ class UniversityRecycleZone extends JFrame {
     Image Logo, Logo2;
 
     public UniversityRecycleZone() {
-
+        DBConnection.initDatabase();
+               
         //Containers
         MainF = new JFrame("University Recycle Zone");
         header = new JPanel();
