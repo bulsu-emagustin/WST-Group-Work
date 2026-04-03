@@ -10,6 +10,7 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,10 +25,11 @@ class AdminFrame extends JFrame {
     JFrame AdminF;
     JPanel mainheader, header, UnivImageP, customMenuBar, mainPanel, panel1, panel2, RecordP, subheader, dashboardP, plasticP, glassP, paperP, metalP, EWasteP, DepartmentDP;
     JTextField IDfield;
-    JLabel UnivIcon, UniversityL, AdminL, TitleL, UnivIDL, DepartmentL, MTypeL, DashT;
+    JLabel UnivIcon, UniversityL, AdminL, TitleL, UnivIDL, DepartmentL, MTypeL, DashT, RegisterL, StudentID, RemoveL;
+    JDialog RegisterD, DeleteD;
     ImageIcon UnivL, ScaledUnivIcon;
     Image Logo;
-    JButton AdminButton, RecordButton, RegisterButton, DeleteButton, DashboardButton, SearchButton;
+    JButton AdminButton, RecordButton, RegisterButton, RemoveButton, DashboardButton, SearchButton, AddButton, CancelButton, ConfirmRemoveBtn;
     String[][] Values = {};
     String[] Atributes = {"Student ID", "Department", "Material Type", "Quantity", "Transaction", "Date"};
     JTable Table;
@@ -63,6 +65,8 @@ class AdminFrame extends JFrame {
         DonutChartPanel paperChart = new DonutChartPanel(15, Color.YELLOW, "Paper");
         DonutChartPanel metalChart = new DonutChartPanel(10, Color.GRAY, "Metal");
         DonutChartPanel ewasteChart = new DonutChartPanel(15, Color.RED, "E-Waste");
+        RegisterD = new JDialog();
+        DeleteD = new JDialog();
 
         //Background Image for Panel 1
         AMainBack1 = new ImageIcon("Admin_Background.jpg");
@@ -126,8 +130,8 @@ class AdminFrame extends JFrame {
         RecordButton.setPreferredSize(new Dimension(100, 40));
         RegisterButton = new JButton("Register");
         RegisterButton.setPreferredSize(new Dimension(100, 40));
-        DeleteButton = new JButton("Delete");
-        DeleteButton.setPreferredSize(new Dimension(100, 40));
+        RemoveButton = new JButton("Remove");
+        RemoveButton.setPreferredSize(new Dimension(100, 40));
         DashboardButton = new JButton("Dashboard");
         DashboardButton.setPreferredSize(new Dimension(100, 40));
 
@@ -180,12 +184,70 @@ class AdminFrame extends JFrame {
                 new UniversityRecycleZone();
             }
         });
-        
+
         //Register Button Function
         RegisterButton.addActionListener(e -> {
-            
+            RegisterD.setSize(500, 315);
+            RegisterD.setLocationRelativeTo(null);
+            RegisterD.setLayout(null);
+            RegisterL = new JLabel("Register Student");
+            RegisterL.setFont(new Font("Arial", Font.BOLD, 20));
+            RegisterL.setBounds(165, 10, 300, 50);
+            StudentID = new JLabel("Student ID: ");
+            StudentID.setBounds(50, 60, 100, 50);
+            IDfield = new JTextField(50);
+            IDfield.setBounds(120, 70, 300, 30);
+            DepartmentL = new JLabel("Department: ");
+            DepartmentL.setBounds(45, 5, 300, 300);
+            DTypeBox = new JComboBox<>(DType);
+            DTypeBox.setBounds(120, 140, 300, 30);
+            AddButton = new JButton("Add Student");
+            AddButton.setBounds(80, 200, 150, 50);
+            CancelButton = new JButton("Cancel");
+            CancelButton.setBounds(250, 200, 150, 50);
+
+            RegisterD.setVisible(true);
+
+            CancelButton.addActionListener(ev -> RegisterD.dispose());
+
+            //Adding Components
+            RegisterD.add(RegisterL);
+            RegisterD.add(StudentID);
+            RegisterD.add(IDfield);
+            RegisterD.add(DepartmentL);
+            RegisterD.add(DTypeBox);
+            RegisterD.add(AddButton);
+            RegisterD.add(CancelButton);
         });
-        
+
+        RemoveButton.addActionListener(e -> {
+            DeleteD.setSize(500, 250);
+            DeleteD.setLocationRelativeTo(null);
+            DeleteD.setLayout(null);
+            RemoveL = new JLabel("Remove Student");
+            RemoveL.setFont(new Font("Arial", Font.BOLD, 20));
+            RemoveL.setBounds(165, 10, 300, 50);
+            StudentID = new JLabel("Student ID: ");
+            StudentID.setBounds(50, 60, 100, 50);
+            IDfield = new JTextField(50);
+            IDfield.setBounds(120, 70, 300, 30);
+            RemoveButton = new JButton("Remove Student");
+            RemoveButton.setBounds(80, 130, 150, 50);
+            CancelButton = new JButton("Cancel");
+            CancelButton.setBounds(250, 130, 150, 50);
+            
+            CancelButton.addActionListener(ev -> DeleteD.dispose());
+
+            //Adding Components
+            DeleteD.add(RemoveL);
+            DeleteD.add(StudentID);
+            DeleteD.add(IDfield);
+            DeleteD.add(RemoveButton);
+            DeleteD.add(CancelButton);
+
+            DeleteD.setVisible(true);
+        });
+
         //sample data
         String[] departments = {
             "IT", "Engineering", "Business", "Education", "Medical", "Criminology"
@@ -209,7 +271,7 @@ class AdminFrame extends JFrame {
         mainheader.add(customMenuBar, BorderLayout.CENTER);
         customMenuBar.add(RecordButton);
         customMenuBar.add(RegisterButton);
-        customMenuBar.add(DeleteButton);
+        customMenuBar.add(RemoveButton);
         customMenuBar.add(DashboardButton);
         AdminF.add(mainPanel, BorderLayout.CENTER);
         mainPanel.add(panel1, "panel1");
