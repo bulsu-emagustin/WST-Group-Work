@@ -180,11 +180,37 @@ class UniversityRecycleZone extends JFrame {
             // SQL Insert
             String sql = "INSERT INTO Contributions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
             PreparedStatement pst = con.prepareStatement(sql);
+            
+            int IDField = Integer.parseInt(IDfield.getText());
+            String SelectedItem = MTypeBox.getSelectedItem().toString();
+            int QtyField = Integer.parseInt(Quantityfield.getText());
+            
+            pst.setInt(1, IDField);
+            pst.setString(2, SelectedItem);
+            pst.setInt(3, QtyField);
+            
+            //INSERT also datas to transactions
+            String sqlTrans = "INSERT INTO Transactions (StudentNo, ContributionID) VALUES (?, ?)";
+            PreparedStatement pst1 = con.prepareStatement(sqlTrans);
 
-            pst.setInt(1, Integer.parseInt(IDfield.getText()));
-            pst.setString(2, MTypeBox.getSelectedItem().toString());
-            pst.setInt(3, Integer.parseInt(Quantityfield.getText()));
+            int studentID = Integer.parseInt(IDfield.getText()); 
+            pst1.setInt(1, studentID);
 
+            String getContriID = "SELECT ContributionID FROM Contributions WHERE StudentNo = ? ORDER BY ContributionID DESC LIMIT 1";
+            PreparedStatement get = con.prepareStatement(getContriID);
+            get.setInt(1, studentID);
+            ResultSet rs = get.executeQuery();
+
+            if (rs.next()) {
+                int lastContriID = rs.getInt("ContributionID");
+                pst1.setInt(2, lastContriID); 
+
+                pst1.executeUpdate(); 
+                System.out.println("Transaction linked successfully.");
+            }
+
+            
+            
             // Execute
             int rows = pst.executeUpdate();
 
@@ -244,7 +270,7 @@ class UniversityRecycleZone extends JFrame {
             // JOIN query to pull data from both tables
             String query = "SELECT T.TransactionID, C.StudentNo, C.MaterialType, C.Quantity, T.Department, T.CollectionDate " +
                            "FROM Transactions T " +
-                           "INNER JOIN Contributions C ON T.ContributionID = C.ContributionID " +
+                           "LEFT JOIN Contributions C ON T.ContributionID = C.ContributionID " +
                            "WHERE C.StudentNo = ?";
             
             PreparedStatement pst = con.prepareStatement(query);
