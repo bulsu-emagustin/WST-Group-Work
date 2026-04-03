@@ -159,21 +159,39 @@ class UniversityRecycleZone extends JFrame {
             Contribution.add(EnterButton);
             Contribution.add(CancelButton);
             
+            // Handler for addit
             EnterButton.addActionListener(ev -> {
                 try {
                     if (IDfield.getText().isEmpty() || Quantityfield.getText().isEmpty()) {
                         JOptionPane.showMessageDialog(Contribution, "Please fill all fields!", "Input Error", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
-
+                    int id = Integer.parseInt(IDfield.getText());
+                            
                     try (Connection con = DBConnection.getConnection()) {
+                        // Check if the Number is a registered student
+                        String checkSql = "SELECT StudentNo FROM Students WHERE StudentNo = ?";
+                        PreparedStatement checkPst = con.prepareStatement(checkSql);
+                        checkPst.setInt(1, id);
+                        ResultSet rs = checkPst.executeQuery();
+
+                        if (!rs.next()) {
+                            // If the record does not exist in the Students table
+                            JOptionPane.showMessageDialog(Contribution, 
+                                "Access Denied: Student ID " + id + " is not registered.\n" +
+                                "Please contact an Admin for registration.", 
+                                "Unregistered Student", JOptionPane.ERROR_MESSAGE);
+                            return; 
+                        }
+
+                        // --- STEP 2: PROCEED TO INSERT TRANSACTION ---
                         String sql = "INSERT INTO Transactions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
                         PreparedStatement pst = con.prepareStatement(sql);
-                        
-                        pst.setInt(1, Integer.parseInt(IDfield.getText()));
+
+                        pst.setInt(1, id);
                         pst.setString(2, MTypeBox.getSelectedItem().toString());
-                        pst.setInt(3, Integer.parseInt(Quantityfield.getText()));
-                        
+                        pst.setInt(3, id);
+
                         int rows = pst.executeUpdate();
                         if (rows > 0) {
                             JOptionPane.showMessageDialog(Contribution, "Contribution successfully saved");
@@ -186,10 +204,11 @@ class UniversityRecycleZone extends JFrame {
                     JOptionPane.showMessageDialog(Contribution, "Please enter numeric values for ID and Quantity.");
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    JOptionPane.showMessageDialog(Contribution, "Database Error: " + ex.getMessage());
                 }
             });
 
-            CancelButton.addActionListener(ev -> Contribution.dispose());
+            CancelButton.addActionListener(ex -> Contribution.dispose());
             Contribution.setVisible(true);
         });
 
