@@ -26,7 +26,7 @@ import java.sql.SQLException;
 
 public class RecyclingCollectionMonitoringSystem {
 
-    //Main Method (DIto palagi magrun ng code)
+    //Main Method
     public static void main(String[] args) {
         new WelcomeFrame();
     }
@@ -50,7 +50,7 @@ class UniversityRecycleZone extends JFrame {
 
     public UniversityRecycleZone() {
         DBConnection.initDatabase();
-               
+                
         //Containers
         MainF = new JFrame("University Recycle Zone");
         header = new JPanel();
@@ -61,8 +61,6 @@ class UniversityRecycleZone extends JFrame {
         Contribution = new JDialog(this, "Contribution Form", true);
         History = new JDialog(this, "User History", true);
         String[] Mtype = {"Plastic", "Glass", "Paper", "Metal", "E-Waste"};
-        String[] Atributes = {"Student ID", "Department", "Material Type", "Quantity", "Transaction", "Date"};
-        String[][] Values = {};
         MainP = new JPanel(); 
         ColumnChart = new WeeklyColumnChart();
 
@@ -151,7 +149,6 @@ class UniversityRecycleZone extends JFrame {
             CancelButton.setBounds(270, 230, 130, 50);
             CancelButton.setFont(new Font("Arial", Font.BOLD, 25));
 
-            //Adding Components
             Contribution.add(SIDL);
             Contribution.add(ContributionL);
             Contribution.add(IDfield);
@@ -163,150 +160,101 @@ class UniversityRecycleZone extends JFrame {
             Contribution.add(CancelButton);
             
             EnterButton.addActionListener(ev -> {
-            try {
-            // Validation
-            if (IDfield.getText().isEmpty() || Quantityfield.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(Contribution, "Please fill all fields!", "Input Error", JOptionPane.WARNING_MESSAGE);
-            return;
-            }
+                try {
+                    if (IDfield.getText().isEmpty() || Quantityfield.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(Contribution, "Please fill all fields!", "Input Error", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
 
-            // Connect to DB
-            Connection con = DBConnection.getConnection();
-            if (con == null) {
-            JOptionPane.showMessageDialog(Contribution, "Connection Failed!", "", JOptionPane.ERROR_MESSAGE);
-            return;
-            }
-            
-            // SQL Insert
-            String sql = "INSERT INTO Contributions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
-            PreparedStatement pst = con.prepareStatement(sql);
-            
-            int IDField = Integer.parseInt(IDfield.getText());
-            String SelectedItem = MTypeBox.getSelectedItem().toString();
-            int QtyField = Integer.parseInt(Quantityfield.getText());
-            
-            pst.setInt(1, IDField);
-            pst.setString(2, SelectedItem);
-            pst.setInt(3, QtyField);
-            
-            //INSERT also datas to transactions
-            String sqlTrans = "INSERT INTO Transactions (StudentNo, ContributionID) VALUES (?, ?)";
-            PreparedStatement pst1 = con.prepareStatement(sqlTrans);
+                    try (Connection con = DBConnection.getConnection()) {
+                        String sql = "INSERT INTO Transactions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
+                        PreparedStatement pst = con.prepareStatement(sql);
+                        
+                        pst.setInt(1, Integer.parseInt(IDfield.getText()));
+                        pst.setString(2, MTypeBox.getSelectedItem().toString());
+                        pst.setInt(3, Integer.parseInt(Quantityfield.getText()));
+                        
+                        int rows = pst.executeUpdate();
+                        if (rows > 0) {
+                            JOptionPane.showMessageDialog(Contribution, "Contribution successfully saved");
+                            IDfield.setText("");
+                            Quantityfield.setText("");
+                            Contribution.dispose();
+                        }
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(Contribution, "Please enter numeric values for ID and Quantity.");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
 
-            int studentID = Integer.parseInt(IDfield.getText()); 
-            pst1.setInt(1, studentID);
-
-            String getContriID = "SELECT ContributionID FROM Contributions WHERE StudentNo = ? ORDER BY ContributionID DESC LIMIT 1";
-            PreparedStatement get = con.prepareStatement(getContriID);
-            get.setInt(1, studentID);
-            ResultSet rs = get.executeQuery();
-
-            if (rs.next()) {
-                int lastContriID = rs.getInt("ContributionID");
-                pst1.setInt(2, lastContriID); 
-
-                pst1.executeUpdate(); 
-                System.out.println("Transaction linked successfully.");
-            }
-
-            
-            
-            // Execute
-            int rows = pst.executeUpdate();
-
-            if (rows > 0) {
-            JOptionPane.showMessageDialog(Contribution, "Contribution successfully saved", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-            // Clear fields after insert
-            IDfield.setText("");
-            Quantityfield.setText("");
-
-            Contribution.dispose(); // close dialog
-            }
-
-            con.close();
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(Contribution, "Invalid Input: School ID and Quantity must be whole numbers.", "Format Error", JOptionPane.ERROR_MESSAGE);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-        }
-        });
-            //Listeners for Contribution Dialog
             CancelButton.addActionListener(ev -> Contribution.dispose());
-
-            //Visibility (Importanteng palaging nasa pinaka dulo ito)
             Contribution.setVisible(true);
         });
 
         //View Contribution
-    ViewContriButton.addActionListener(e -> {
-    History.setSize(850, 450); // Made slightly wider for more columns
-    History.setLocationRelativeTo(this);
-    History.setLayout(null);
+        ViewContriButton.addActionListener(e -> {
+            History.setSize(850, 450);
+            History.setLocationRelativeTo(this);
+            History.setLayout(null);
 
-    JLabel SIDL = new JLabel("School ID: ");
-    SIDL.setBounds(400, 13, 100, 35);
-    JTextField searchField = new JTextField(50);
-    searchField.setBounds(470, 13, 200, 35);
-    JButton searchBtn = new JButton("Search");
-    searchBtn.setBounds(680, 13, 100, 35);
+            JLabel SIDL_History = new JLabel("School ID: ");
+            SIDL_History.setBounds(400, 13, 100, 35);
+            JTextField searchField = new JTextField(50);
+            searchField.setBounds(470, 13, 200, 35);
+            JButton searchBtn = new JButton("Search");
+            searchBtn.setBounds(680, 13, 100, 35);
 
-    // Columns
-    String[] columns = {"Transaction ID", "Student No", "Material", "Quantity", "Department", "Date"};
-    DefaultTableModel model = new DefaultTableModel(columns, 0);
-    JTable Table = new JTable(model);
-    JScrollPane TableS = new JScrollPane(Table);
-    TableS.setBounds(10, 60, 810, 330);
+            String[] columns = {"Transaction ID", "Student No", "Material", "Quantity", "Department", "Date"};
+            DefaultTableModel model = new DefaultTableModel(columns, 0);
+            Table = new JTable(model); // Using class variable
+            TableS = new JScrollPane(Table); // Using class variable
+            TableS.setBounds(10, 60, 810, 330);
 
-    searchBtn.addActionListener(searchEv -> {
-        String studentID = searchField.getText().trim();
-        if (studentID.isEmpty()) {
-            JOptionPane.showMessageDialog(History, "Please enter a Student Number.");
-            return;
-        }
+            searchBtn.addActionListener(searchEv -> {
+                String studentID = searchField.getText().trim();
+                if (studentID.isEmpty()) {
+                    JOptionPane.showMessageDialog(History, "Please enter a Student Number.");
+                    return;
+                }
 
-        try (Connection con = DBConnection.getConnection()) {
-            // JOIN query to pull data from both tables
-            String query = "SELECT T.TransactionID, C.StudentNo, C.MaterialType, C.Quantity, T.Department, T.CollectionDate " +
-                           "FROM Transactions T " +
-                           "LEFT JOIN Contributions C ON T.ContributionID = C.ContributionID " +
-                           "WHERE C.StudentNo = ?";
-            
-            PreparedStatement pst = con.prepareStatement(query);
-            pst.setString(1, studentID);
-            ResultSet rs = pst.executeQuery();
-            
-            model.setRowCount(0); // Clear table for new search
+                try (Connection con = DBConnection.getConnection()) {
+                    // Added WHERE clause to fix your parameter error
+                    String query = "SELECT * FROM Transactions WHERE StudentNo = ?";
+                    PreparedStatement pst = con.prepareStatement(query);
+                    pst.setString(1, studentID);
+                    ResultSet rs = pst.executeQuery();
+                    
+                    model.setRowCount(0); 
 
-            boolean found = false;
-            while (rs.next()) {
-                found = true;
-                model.addRow(new Object[]{
-                    rs.getInt("TransactionID"),
-                    rs.getInt("StudentNo"),
-                    rs.getString("MaterialType"),
-                    rs.getInt("Quantity"),
-                    rs.getString("Department"),
-                    rs.getTimestamp("CollectionDate") // Using Timestamp for DATETIME2
-                });
-            }
+                    boolean found = false;
+                    while (rs.next()) {
+                        found = true;
+                        model.addRow(new Object[]{
+                            rs.getInt("TransactionID"),
+                            rs.getInt("StudentNo"),
+                            rs.getString("MaterialType"),
+                            rs.getInt("Quantity"),
+                            rs.getString("Department"),
+                            rs.getTimestamp("CollectionDate")
+                        });
+                    }
 
-            if (!found) {
-                JOptionPane.showMessageDialog(History, "No transactions found for Student: " + studentID);
-            }
+                    if (!found) {
+                        JOptionPane.showMessageDialog(History, "No transactions found for Student: " + studentID);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(History, "Connection Error");
-        }
-    });
-    History.add(TableS);
-    History.add(SIDL);
-    History.add(searchField);
-    History.add(searchBtn);
-    History.setVisible(true);
-});
+            History.add(TableS);
+            History.add(SIDL_History);
+            History.add(searchField);
+            History.add(searchBtn);
+            History.setVisible(true);
+        });
         
         //Main Panel
         MainP.setBackground(Color.WHITE);
@@ -338,20 +286,15 @@ class UniversityRecycleZone extends JFrame {
         MainP.add(ContributionL);
         MainP.add(ColumnChart);
 
-        //Frame Settings
         MainF.setSize(1500, 800);
         MainF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         MainF.setLocationRelativeTo(null);
         MainF.setVisible(true);
     }
 
-    //Class for Admin Login
     class LoginFunction extends JFrame {
-
         public LoginFunction() {
             AdminButton.addActionListener(e -> {
-
-                //Dialog Settings
                 Login.setSize(550, 300);
                 Login.setLocationRelativeTo(this);
                 Login.setLayout(null);
@@ -360,7 +303,6 @@ class UniversityRecycleZone extends JFrame {
                 LoginL.setBounds(220, 10, 150, 40);
                 Login.add(LoginL);
 
-                //Username
                 UsernameL = new JLabel("Username:");
                 UsernameL.setBounds(50, 60, 100, 25);
                 Login.add(UsernameL);
@@ -368,27 +310,22 @@ class UniversityRecycleZone extends JFrame {
                 Usernamefield.setBounds(115, 60, 285, 30);
                 Login.add(Usernamefield);
 
-                //Clear Username Button
                 JButton clearUser = new JButton("Clear");
                 clearUser.setBounds(410, 60, 80, 30);
                 Login.add(clearUser);
 
-                //Password Label
                 PasswordL = new JLabel("Password:");
                 PasswordL.setBounds(50, 110, 100, 25);
                 Login.add(PasswordL);
 
-                //Password Field
                 Passworfield = new JTextField();
                 Passworfield.setBounds(115, 110, 285, 30);
                 Login.add(Passworfield);
 
-                // Enter Button Logic for Admin Login
                 EnterButton = new JButton("Enter");
                 EnterButton.setBounds(150, 180, 100, 40);
 
-                // Login Logic
-                EnterButton.addActionListener((var ev) -> {
+                EnterButton.addActionListener(ev -> {
                     String user = Usernamefield.getText().trim();
                     String pass = Passworfield.getText();
 
@@ -401,7 +338,7 @@ class UniversityRecycleZone extends JFrame {
 
                         if (rs.next()) {
                             JOptionPane.showMessageDialog(Login, "Welcome Admin!");
-                            new AdminFrame(); // Ensure this class exists
+                            new AdminFrame(); 
                             Login.dispose();
                             MainF.dispose();
                         } else {
@@ -414,20 +351,15 @@ class UniversityRecycleZone extends JFrame {
                     Usernamefield.setText("");
                     Passworfield.setText("");
                 });
-
                 
                 Login.add(EnterButton);
-
-                //Cancel Button
                 CancelButton = new JButton("Cancel");
                 CancelButton.setBounds(270, 180, 100, 40);
                 Login.add(CancelButton);
                 CancelButton.addActionListener(ev -> Login.dispose());
-                
 
                 Login.setVisible(true);
             });
         }
-
     }
 }
