@@ -76,11 +76,13 @@ public class AdminFrame extends JFrame {
         EWasteP = new JPanel();
         DepartmentDP = new JPanel();
         
-        DonutChartPanel plasticChart = new DonutChartPanel(40, Color.GREEN, "Plastic");
-        DonutChartPanel glassChart = new DonutChartPanel(20, Color.CYAN, "Glass");
-        DonutChartPanel paperChart = new DonutChartPanel(15, Color.YELLOW, "Paper");
-        DonutChartPanel metalChart = new DonutChartPanel(10, Color.GRAY, "Metal");
-        DonutChartPanel ewasteChart = new DonutChartPanel(15, Color.RED, "E-Waste");
+        //Set the values
+        AdminStatsLoader loader = new AdminStatsLoader();
+        DonutChartPanel plasticChart = new DonutChartPanel(loader.getPlastic(), Color.GREEN, "Plastic");
+        DonutChartPanel glassChart = new DonutChartPanel(loader.getGlass(), Color.CYAN, "Glass");
+        DonutChartPanel paperChart = new DonutChartPanel(loader.getPaper(), Color.YELLOW, "Paper");
+        DonutChartPanel metalChart = new DonutChartPanel(loader.getMetal(), Color.GRAY, "Metal");
+        DonutChartPanel ewasteChart = new DonutChartPanel(loader.getEWaste(), Color.RED, "E-Waste");
         
         RegisterD = new JDialog();
         DeleteD = new JDialog();
@@ -220,6 +222,7 @@ public class AdminFrame extends JFrame {
             
             DepartmentL = new JLabel("Department: ");
             DepartmentL.setBounds(45, 130, 100, 50);
+            
             // Slice the "All Departments" out for registration
             String[] regDeptsOnly = java.util.Arrays.copyOfRange(DType, 1, DType.length);
             JComboBox<String> regDept = new JComboBox<>(regDeptsOnly);
@@ -268,10 +271,17 @@ public class AdminFrame extends JFrame {
             DeleteD.setVisible(true);
         });
 
-        // Dashboard Sample Data (Pie Chart)
+        // Dashboard (Pie Chart)
+        
+        //fetch the data using the named  class
+        loader.updateDepartmentCounts();
+        
+        //instantiate variables
         String[] depts = {"IT", "Engineering", "Business", "Education", "Medical", "Criminology"};
-        double[] vals = {25, 20, 15, 10, 20, 10};
+        double[] vals = loader.getCountsArray();
         Color[] cols = {Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN, Color.PINK};
+        
+        //creation of the chart
         PieChartPanel pieChart = new PieChartPanel(depts, vals, cols);
         DepartmentDP.setLayout(new BorderLayout());
         DepartmentDP.add(pieChart, BorderLayout.CENTER);
@@ -314,7 +324,7 @@ public class AdminFrame extends JFrame {
         AdminF.setVisible(true);
     }
 
-    // --- NAMED CLASSES ---
+    // Named class
 
     class PanelSwitcher implements ActionListener {
         
@@ -422,4 +432,88 @@ public class AdminFrame extends JFrame {
             }
         }
     }
+    
+    class AdminStatsLoader {
+        
+    private int itCount = 0;
+    private int engCount = 0;
+    private int busCount = 0;
+    private int eduCount = 0;
+    private int medCount = 0;
+    private int crimCount = 0;
+    
+    private int plasticTot, glassTot, paperTot, metalTot, eWasteTot;
+    
+    //method for fetching Material count
+    public void updateMaterialCounts() {
+        
+            plasticTot = glassTot = paperTot = metalTot = eWasteTot = 0;
+            String sql = "SELECT MaterialType, SUM(Quantity) AS Total FROM Transactions GROUP BY MaterialType";
+
+            try (Connection con = DBConnection.getConnection();
+                 PreparedStatement pst = con.prepareStatement(sql);
+                 ResultSet rs = pst.executeQuery()) {
+
+                while (rs.next()) {
+                    String mat = rs.getString("MaterialType");
+                    int total = rs.getInt("Total");
+
+                    switch (mat) {
+                        case "Plastic": plasticTot = total; break;
+                        case "Glass":   glassTot = total; break;
+                        case "Paper":   paperTot = total; break;
+                        case "Metal":   metalTot = total; break;
+                        case "E-Waste": eWasteTot = total; break;
+                    }
+                }
+            } catch (SQLException e) { e.printStackTrace(); }
+        }
+    
+        
+        
+    
+    //method for fetching Deparment counts
+    public void updateDepartmentCounts() {
+        
+        itCount = engCount = busCount = eduCount = medCount = crimCount = 0;
+
+        String sql = "SELECT Department, COUNT(*) AS Total FROM Students GROUP BY Department";
+
+            try (Connection con = DBConnection.getConnection();
+                 PreparedStatement pst = con.prepareStatement(sql);
+                 ResultSet rs = pst.executeQuery()) {
+
+                while (rs.next()) {
+                    String dept = rs.getString("Department");
+                    int total = rs.getInt("Total");
+
+                    //
+                    switch (dept) {
+                        case "Information Technology": itCount = total; break;
+                        case "Civil Engineering":      engCount = total; break;
+                        case "Business Administration": busCount = total; break;
+                        case "Education":               eduCount = total; break;
+                        case "Medical Technology":      medCount = total; break;
+                        case "Criminology":             crimCount = total; break;
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // return the val to an array
+        public double[] getCountsArray() {
+            return new double[]{itCount, engCount, busCount, eduCount, medCount, crimCount};
+        }
+        
+        //return material val to the charts
+        public int getPlastic() { return plasticTot; }
+        public int getGlass() { return glassTot; }
+        public int getPaper() { return paperTot; }
+        public int getMetal() { return metalTot; }
+        public int getEWaste() { return eWasteTot; }
+    
+    }
+    
 }
