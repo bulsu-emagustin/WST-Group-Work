@@ -8,7 +8,6 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
-
 public class DonutChartPanel extends JPanel {
 
     private double percentage;
@@ -39,7 +38,8 @@ public class DonutChartPanel extends JPanel {
 
         // Foreground (progress)
         g2.setColor(color);
-        int angle = (int) (360 * percentage / 100);
+        int safePercent = (int) Math.min(percentage, 100);
+        int angle = (int) (360 * safePercent / 100);
         g2.fillArc(x, y, size, size, 90, -angle);
 
         // Inner circle (hole)
@@ -56,15 +56,15 @@ public class DonutChartPanel extends JPanel {
         g2.setFont(new Font("Arial", Font.BOLD, 18));
 
         FontMetrics fm = g2.getFontMetrics();
-        int tx = getWidth()/2 - fm.stringWidth(text)/2;
-        int ty = getHeight()/2 + fm.getAscent()/2;
+        int tx = getWidth() / 2 - fm.stringWidth(text) / 2;
+        int ty = getHeight() / 2 + fm.getAscent() / 2;
 
         g2.drawString(text, tx, ty);
 
         // Label (below)
         g2.setFont(new Font("Arial", Font.PLAIN, 12));
         fm = g2.getFontMetrics();
-        int lx = getWidth()/2 - fm.stringWidth(label)/2;
+        int lx = getWidth() / 2 - fm.stringWidth(label) / 2;
         g2.drawString(label, lx, getHeight() - 10);
     }
 }
