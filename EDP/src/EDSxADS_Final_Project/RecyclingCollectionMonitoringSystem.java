@@ -29,7 +29,7 @@ public class RecyclingCollectionMonitoringSystem {
 
     //Main Method
     public static void main(String[] args) {
-        new UniversityRecycleZone();
+        new AdminFrame();
     }
 }
 
