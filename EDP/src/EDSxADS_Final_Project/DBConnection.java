@@ -34,8 +34,7 @@ public class DBConnection {
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Bins (" +
                                "BinID INT AUTO_INCREMENT PRIMARY KEY, " +
                                "LocationName VARCHAR(100) NOT NULL, " +
-                               "Status ENUM('Empty', 'Half-Full', 'Full') DEFAULT 'Empty', " +
-                               "LastEmptied DATETIME DEFAULT CURRENT_TIMESTAMP)");
+                               "Status ENUM('Empty', 'Half-Full', 'Full') DEFAULT 'Empty'");
             
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Students (" +
                                "StudentNo INT PRIMARY KEY, " +
