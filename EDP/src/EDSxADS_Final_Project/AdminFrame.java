@@ -64,8 +64,9 @@ public class AdminFrame extends JFrame {
         RecordP = new JPanel();
         subheader = new JPanel();
         
-        String[] DType = {"Information Technology", "Civil Engineering", "Business Administration", "Entrepreneurship", "Education", "Medical Technology", "Criminology"};
-        String[] MType = {"Plastic", "Glass", "Paper", "Metal", "E-Waste"};
+        // Added "All" to the arrays
+        String[] DType = {"All Departments", "Information Technology", "Civil Engineering", "Business Administration", "Entrepreneurship", "Education", "Medical Technology", "Criminology"};
+        String[] MType = {"All Materials", "Plastic", "Glass", "Paper", "Metal", "E-Waste"};
         
         dashboardP = new JPanel();
         plasticP = new JPanel();
@@ -166,7 +167,6 @@ public class AdminFrame extends JFrame {
         SearchButton = new JButton("Search");
         SearchButton.setBounds(1080, 10, 90, 30);
         
-        // Initialize Table with Model
         DefaultTableModel model = new DefaultTableModel(Atributes, 0);
         Table = new JTable(model);
         Table.getTableHeader().setReorderingAllowed(false);
@@ -186,8 +186,6 @@ public class AdminFrame extends JFrame {
         EWasteP.setBounds(400, 270, 250, 200);
         DepartmentDP.setBounds(800, 10, 570, 480);
 
-        // --- BUTTON ACTION LISTENERS USING NAMED CLASSES ---
-
         // Navigation
         RecordButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel1"));
         DashboardButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel2"));
@@ -201,8 +199,8 @@ public class AdminFrame extends JFrame {
             }
         });
 
-        // Search
-        SearchButton.addActionListener(new SearchRecords(IDfield, MTypeBox, Table));
+        // Search Action
+        SearchButton.addActionListener(new FilterRecords(IDfield, DTypeBox, MTypeBox, Table));
 
         // Register Dialog Trigger
         RegisterButton.addActionListener(e -> {
@@ -217,12 +215,14 @@ public class AdminFrame extends JFrame {
             
             StudentID = new JLabel("Student ID: ");
             StudentID.setBounds(50, 60, 100, 50);
-            JTextField regID = new JTextField(); // Dialog specific ID field
+            JTextField regID = new JTextField();
             regID.setBounds(120, 70, 300, 30);
             
             DepartmentL = new JLabel("Department: ");
             DepartmentL.setBounds(45, 130, 100, 50);
-            JComboBox<String> regDept = new JComboBox<>(DType);
+            // Slice the "All Departments" out for registration
+            String[] regDeptsOnly = java.util.Arrays.copyOfRange(DType, 1, DType.length);
+            JComboBox<String> regDept = new JComboBox<>(regDeptsOnly);
             regDept.setBounds(120, 140, 300, 30);
             
             AddButton = new JButton("Add Student");
@@ -276,7 +276,7 @@ public class AdminFrame extends JFrame {
         DepartmentDP.setLayout(new BorderLayout());
         DepartmentDP.add(pieChart, BorderLayout.CENTER);
 
-        // Adding Components to Panels
+        // UI Assembly
         AdminF.add(mainheader, BorderLayout.NORTH);
         mainheader.add(header, BorderLayout.NORTH);
         mainheader.add(customMenuBar, BorderLayout.CENTER);
@@ -308,14 +308,16 @@ public class AdminFrame extends JFrame {
         header.add(UnivImageP); UnivImageP.add(UnivIcon);
         header.add(UniversityL); header.add(AdminL); header.add(AdminButton);
 
-        // Final Frame Settings
         AdminF.setSize(1500, 800);
         AdminF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AdminF.setLocationRelativeTo(null);
         AdminF.setVisible(true);
     }
 
+    // --- NAMED CLASSES ---
+
     class PanelSwitcher implements ActionListener {
+        
         private JPanel mainPanel;
         private CardLayout cl;
         private String target;
@@ -331,7 +333,6 @@ public class AdminFrame extends JFrame {
         
         public AddStudent(JDialog p, JTextField i, JComboBox<String> d) { this.parent = p; this.idF = i; this.dBox = d; }
         public void actionPerformed(ActionEvent e) {
-            
             try (Connection con = DBConnection.getConnection()) {
                 PreparedStatement pst = con.prepareStatement("INSERT INTO Students (StudentNo, Department) VALUES (?, ?)");
                 pst.setInt(1, Integer.parseInt(idF.getText().trim()));
@@ -351,7 +352,6 @@ public class AdminFrame extends JFrame {
         
         public RemoveStudent(JDialog p, JTextField i) { this.parent = p; this.idF = i; }
         public void actionPerformed(ActionEvent e) {
-            
             int confirm = JOptionPane.showConfirmDialog(parent, "Delete student and all related records?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 try (Connection con = DBConnection.getConnection()) {
@@ -366,26 +366,60 @@ public class AdminFrame extends JFrame {
         }
     }
 
-    class SearchRecords implements ActionListener {
+    class FilterRecords implements ActionListener {
         private JTextField idF;
+        private JComboBox<String> dBox;
         private JComboBox<String> mBox;
         private JTable table;
-        public SearchRecords(JTextField i, JComboBox<String> m, JTable t) { this.idF = i; this.mBox = m; this.table = t; }
+
+        public FilterRecords(JTextField i, JComboBox<String> d, JComboBox<String> m, JTable t) {
+            this.idF = i;
+            this.dBox = d;
+            this.mBox = m;
+            this.table = t;
+        }
+
         public void actionPerformed(ActionEvent e) {
             String id = idF.getText().trim();
+            String dept = dBox.getSelectedItem().toString();
             String mat = mBox.getSelectedItem().toString();
             DefaultTableModel model = (DefaultTableModel) table.getModel();
+            
+            // Convert "All" selections to SQL wildcard (%)
+            String deptSearch = dept.equals("All Departments") ? "%" : dept;
+            String matSearch = mat.equals("All Materials") ? "%" : mat;
+
             try (Connection con = DBConnection.getConnection()) {
-                String sql = "SELECT * FROM Transactions WHERE (StudentNo = ? OR ? = '') AND MaterialType = ?";
+                // Using LIKE allows '%' to act as a wildcard for 'All'
+                String sql = "SELECT t.StudentNo, s.Department, t.MaterialType, t.Quantity, t.TransactionID, t.CollectionDate " +
+                             "FROM Transactions t " +
+                             "INNER JOIN Students s ON t.StudentNo = s.StudentNo " +
+                             "WHERE (t.StudentNo = ? OR ? = '') " +
+                             "AND s.Department LIKE ? " +
+                             "AND t.MaterialType LIKE ?";
+                
                 PreparedStatement pst = con.prepareStatement(sql);
-                pst.setString(1, id); pst.setString(2, id); pst.setString(3, mat);
+                pst.setString(1, id); 
+                pst.setString(2, id); 
+                pst.setString(3, deptSearch);
+                pst.setString(4, matSearch);
+                
                 ResultSet rs = pst.executeQuery();
                 model.setRowCount(0);
                 while (rs.next()) {
-                    model.addRow(new Object[]{rs.getInt("StudentNo"), rs.getString("Department"), 
-                        rs.getString("MaterialType"), rs.getInt("Quantity"), rs.getInt("TransactionID"), rs.getTimestamp("CollectionDate")});
+                    model.addRow(new Object[]{
+                        rs.getInt("StudentNo"), 
+                        rs.getString("Department"), 
+                        rs.getString("MaterialType"), 
+                        rs.getInt("Quantity"), 
+                        rs.getInt("TransactionID"), 
+                        rs.getTimestamp("CollectionDate")
+                    });
                 }
-            } catch (SQLException ex) { ex.printStackTrace(); }
+            } catch (SQLException ex) { 
+                ex.printStackTrace(); 
+                JOptionPane.showMessageDialog(null, "Search Error: " + ex.getMessage());
+            }
         }
     }
 }
