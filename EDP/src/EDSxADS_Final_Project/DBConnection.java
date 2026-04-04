@@ -50,8 +50,8 @@ public class DBConnection {
             if (!hasData(stmt, "Students")) {
                 stmt.executeUpdate("INSERT INTO Students (StudentNo, Department) VALUES " +
                                    "(2024104677, 'Information Technology'), " +
-                                   "(2024104678, 'Computer Science'), " +
-                                   "(2024104679, 'Engineering')");
+                                   "(2024104678, 'Business Administration'), " +
+                                   "(2024104679, 'Civil Engineering')");
             }
 
             // Initial Data Handler for Transactions
