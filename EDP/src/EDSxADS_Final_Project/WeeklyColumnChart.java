@@ -9,8 +9,8 @@ import java.sql.ResultSet;
         
 public class WeeklyColumnChart extends JPanel {
     
-    //initialize variable
-    private int[] values = {0, 0, 0, 0, 0, 0, 0}; 
+    // Changed to long to handle values over 2.1 billion
+    private long[] values = {0, 0, 0, 0, 0, 0, 0}; 
     private String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
 
     public WeeklyColumnChart() {
@@ -24,7 +24,6 @@ public class WeeklyColumnChart extends JPanel {
 
         try (Connection con = DBConnection.getConnection()) {
             // This query calculates total quantity per day for the CURRENT week
-            // WEEKDAY() returns 0 for Monday, 1 for Tuesday, etc.
             String query = "SELECT WEEKDAY(CollectionDate) as DayIndex, SUM(Quantity) as Total " +
                            "FROM Transactions " +
                            "WHERE YEARWEEK(CollectionDate, 1) = YEARWEEK(CURDATE(), 1) " +
@@ -36,7 +35,8 @@ public class WeeklyColumnChart extends JPanel {
             while (rs.next()) {
                 int index = rs.getInt("DayIndex");
                 if (index >= 0 && index < 7) {
-                    values[index] = rs.getInt("Total");
+                    // Changed to getLong to prevent SQLDataException
+                    values[index] = rs.getLong("Total");
                 }
             }
         } catch (Exception e) {
@@ -54,13 +54,18 @@ public class WeeklyColumnChart extends JPanel {
         
         int barWidth = width / values.length;
 
-        int max = 0;
-        for (int v : values) {
+        // Changed max to long to match the values array
+        long max = 0;
+        for (long v : values) {
             if (v > max) max = v;
         }
         
+        // Avoid division by zero if there is no data yet
+        if (max <= 0) max = 1; 
+        
         for (int i = 0; i < values.length; i++) {
-            int barHeight = (int) ((double) values[i] / max * (height - 50));
+            // Calculated using double to maintain precision before casting to pixel height
+            int barHeight = (int) (((double) values[i] / max) * (height - 50));
 
             int x = i * barWidth + 10;
             int y = height - barHeight - 30;
@@ -72,6 +77,8 @@ public class WeeklyColumnChart extends JPanel {
             // Labels
             g.setColor(Color.BLACK);
             g.drawString(days[i], x + 10, height - 10);
+            
+            // Displays the large number as a String above the bar
             g.drawString(String.valueOf(values[i]), x + 10, y - 5);
         }
     }
