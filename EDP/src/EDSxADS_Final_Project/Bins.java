@@ -20,18 +20,23 @@ public class Bins {
         String countSql = "SELECT SUM(Quantity) FROM Transactions WHERE BinID = ?";
         String updateSql = "UPDATE Bins SET Status = ? WHERE BinID = ?";
 
+        // Get connection using the Admin role by default
         try (Connection con = DBConnection.getConnection()) {
-            // Calculate total quantity in this bin
-            PreparedStatement pstmtCount = con.prepareStatement(countSql);
-            pstmtCount.setInt(1, binID);
-            ResultSet rs = pstmtCount.executeQuery();
+            if (con == null) return;
 
             int totalQuantity = 0;
-            if (rs.next()) {
-                totalQuantity = rs.getInt(1);
+            
+            // 1. Calculate total quantity
+            try (PreparedStatement pstmtCount = con.prepareStatement(countSql)) {
+                pstmtCount.setInt(1, binID);
+                try (ResultSet rs = pstmtCount.executeQuery()) {
+                    if (rs.next()) {
+                        totalQuantity = rs.getInt(1);
+                    }
+                }
             }
 
-            // Determine Status
+            // 2. Determine Status based on your logic
             String newStatus;
             if (totalQuantity <= 50) {
                 newStatus = "Empty";
@@ -42,14 +47,16 @@ public class Bins {
             }
 
             // 3. Update the Bins table
-            PreparedStatement pstmtUpdate = con.prepareStatement(updateSql);
-            pstmtUpdate.setString(1, newStatus);
-            pstmtUpdate.setInt(2, binID);
-            pstmtUpdate.executeUpdate();
+            try (PreparedStatement pstmtUpdate = con.prepareStatement(updateSql)) {
+                pstmtUpdate.setString(1, newStatus);
+                pstmtUpdate.setInt(2, binID);
+                pstmtUpdate.executeUpdate();
+            }
 
-            // Optional: Alert if bin becomes full
-            if (newStatus.equals("Full")) {
+            // Alert logic
+            if ("Full".equals(newStatus)) {
                 System.out.println("ALERT: Bin ID " + binID + " is now FULL!");
+                JOptionPane.showMessageDialog(null, "Bin ID " + binID + " has reached capacity!");
             }
 
         } catch (SQLException e) {
@@ -60,15 +67,27 @@ public class Bins {
     
     /**
      * Logic to manually "Empty" a bin (For Admin use)
+     * Note: If you use 'LastEmptied', ensure you add that column to your Bins table in DBConnection.
      */
     public static void clearBin(int binID) {
-        String sql = "UPDATE Bins SET Status = 'Empty', LastEmptied = CURRENT_TIMESTAMP WHERE BinID = ?";
+        // I've removed LastEmptied to match your current DBConnection schema, 
+        // OR you should add "LastEmptied DATETIME" to the Bins table in DBConnection.
+        String sql = "UPDATE Bins SET Status = 'Empty' WHERE BinID = ?";
+        
         try (Connection con = DBConnection.getConnection();
              PreparedStatement pst = con.prepareStatement(sql)) {
+            
+            if (con == null) return;
+            
             pst.setInt(1, binID);
-            pst.executeUpdate();
+            int rowsAffected = pst.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(null, "Bin " + binID + " cleared successfully.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "SQL Error: " + e.getMessage());
         }
     }
 }
