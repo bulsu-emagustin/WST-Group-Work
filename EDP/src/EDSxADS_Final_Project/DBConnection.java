@@ -27,7 +27,7 @@ public class DBConnection {
                                "Username VARCHAR(100) PRIMARY KEY, " +
                                "Password INT)");
             
-            stmt.executeUpdate ("INSERT INTO Admins (Username, Password) VALUES ('Akira', 1234), ('Ernesto', 1234)");
+            stmt.executeUpdate ("INSERT IGNORE INTO Admins (Username, Password) VALUES ('Akira', 1234), ('Ernesto', 1234)");
             
             // Create Registered Table
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Students (" +
@@ -65,7 +65,7 @@ public class DBConnection {
                 stmt.executeUpdate(TransacValue);
             }
 
-            System.out.println("Database Initialized with Relationships.");
+            
 
         } catch (SQLException se) {
             se.printStackTrace();
