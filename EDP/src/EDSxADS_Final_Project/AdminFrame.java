@@ -402,6 +402,16 @@ public class AdminFrame extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
+            
+            //input checker
+            String idText = idF.getText().trim();
+
+            // Guard clause for non-numeric input
+            if (idText.isEmpty() || !idText.matches("\\d+")) {
+                JOptionPane.showMessageDialog(parent, "Please enter a valid numeric Student ID.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             int confirm = JOptionPane.showConfirmDialog(parent, "Delete student and all related records?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 try (Connection con = DBConnection.getConnection()) {
