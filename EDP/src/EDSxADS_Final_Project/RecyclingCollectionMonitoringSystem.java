@@ -161,38 +161,59 @@ class UniversityRecycleZone extends JFrame {
             Contribution.add(EnterButton);
             Contribution.add(CancelButton);
             
-            // Handler for addit
+            // Handler for addition
             EnterButton.addActionListener(ev -> {
                 try {
-                    if (IDfield.getText().isEmpty() || Quantityfield.getText().isEmpty()) {
+                    // Check if fields are empty
+                    if (IDfield.getText().trim().isEmpty() || Quantityfield.getText().trim().isEmpty()) {
                         JOptionPane.showMessageDialog(Contribution, "Please fill all fields!", "Input Error", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
-                    int id = Integer.parseInt(IDfield.getText());
+
+                    // Validate ID format
+                    long id;
+                    try {
+                        id = Long.parseLong(IDfield.getText().trim());
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(Contribution, "Invalid School ID! Please enter numbers only.", "Input Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Validate Quantity format
+                    long qty;
+                    try {
+                        qty = Long.parseLong(Quantityfield.getText().trim());
+                        if (qty <= 0) {
+                            JOptionPane.showMessageDialog(Contribution, "Quantity must be a positive number!", "Input Error", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(Contribution, "Invalid Quantity! Please enter a whole number (integers only).", "Input Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                             
                     try (Connection con = DBConnection.getConnection()) {
-                        // Check if the Number is a registered student
+                        // Check if the Student is registered
                         String checkSql = "SELECT StudentNo FROM Students WHERE StudentNo = ?";
                         PreparedStatement checkPst = con.prepareStatement(checkSql);
-                        checkPst.setInt(1, id);
+                        checkPst.setLong(1, id);
                         ResultSet rs = checkPst.executeQuery();
 
                         if (!rs.next()) {
-                            // If the record does not exist in the Students table
                             JOptionPane.showMessageDialog(Contribution, 
                                 "Access Denied: Student ID " + id + " is not registered.\n" +
                                 "Please contact an Admin for registration.", 
                                 "Unregistered Student", JOptionPane.ERROR_MESSAGE);
                             return; 
-                        }
+                        } 
 
-                        // --- STEP 2: PROCEED TO INSERT TRANSACTION ---
+                        // INSERT TRANSACTION
                         String sql = "INSERT INTO Transactions (StudentNo, MaterialType, Quantity) VALUES (?, ?, ?)";
                         PreparedStatement pst = con.prepareStatement(sql);
 
-                        pst.setInt(1, id);
+                        pst.setLong(1, id);
                         pst.setString(2, MTypeBox.getSelectedItem().toString());
-                        pst.setInt(3, id);
+                        pst.setLong(3, qty); 
 
                         int rows = pst.executeUpdate();
                         if (rows > 0) {
@@ -202,15 +223,18 @@ class UniversityRecycleZone extends JFrame {
                             Contribution.dispose();
                         }
                     }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(Contribution, "Please enter numeric values for ID and Quantity.");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     JOptionPane.showMessageDialog(Contribution, "Database Error: " + ex.getMessage());
                 }
             });
 
-            CancelButton.addActionListener(ex -> Contribution.dispose());
+            CancelButton.addActionListener(ev -> {
+                IDfield.setText("");
+                Quantityfield.setText("");
+                Contribution.dispose();
+            });
+            
             Contribution.setVisible(true);
         });
 
@@ -229,26 +253,27 @@ class UniversityRecycleZone extends JFrame {
 
             String[] columns = {"Transaction ID", "Student No", "Material", "Quantity", "Department", "Date"};
             DefaultTableModel model = new DefaultTableModel(columns, 0);
-            Table = new JTable(model); // Using class variable
-            TableS = new JScrollPane(Table); // Using class variable
+            
+            // Using class variables
+            Table = new JTable(model); 
+            TableS = new JScrollPane(Table); 
             TableS.setBounds(10, 60, 810, 330);
 
             searchBtn.addActionListener(searchEv -> {
-                String studentID = searchField.getText().trim();
-                if (studentID.isEmpty()) {
+                String studentIDStr = searchField.getText().trim();
+                if (studentIDStr.isEmpty()) {
                     JOptionPane.showMessageDialog(History, "Please enter a Student Number.");
                     return;
                 }
 
                 try (Connection con = DBConnection.getConnection()) {
-                    // Added WHERE clause to fix your parameter error
                     String query = "SELECT t.StudentNo, s.Department, t.MaterialType, t.Quantity, t.TransactionID, t.CollectionDate "
                             + "FROM Transactions t "
                             + "INNER JOIN Students s ON t.StudentNo = s.StudentNo "
                             + "WHERE t.StudentNo = ?";
                     
                     PreparedStatement pst = con.prepareStatement(query);
-                    pst.setString(1, studentID);
+                    pst.setString(1, studentIDStr);
                     ResultSet rs = pst.executeQuery();
                     
                     model.setRowCount(0); 
@@ -256,28 +281,33 @@ class UniversityRecycleZone extends JFrame {
                     boolean found = false;
                     while (rs.next()) {
                         found = true;
+                        // Using getLong to prevent overflow crash
                         model.addRow(new Object[]{
-                            rs.getInt("TransactionID"),
-                            rs.getInt("StudentNo"),
+                            rs.getLong("TransactionID"),
+                            rs.getLong("StudentNo"),
                             rs.getString("MaterialType"),
-                            rs.getInt("Quantity"),
+                            rs.getLong("Quantity"),
                             rs.getString("Department"),
                             rs.getTimestamp("CollectionDate")
                         });
                     }
 
                     if (!found) {
-                        JOptionPane.showMessageDialog(History, "No transactions found for Student: " + studentID);
+                        JOptionPane.showMessageDialog(History, "No transactions found for Student: " + studentIDStr);
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    JOptionPane.showMessageDialog(History, "Error: " + ex.getMessage());
                 }
             });
 
+            History.getContentPane().removeAll(); 
             History.add(TableS);
             History.add(SIDL_History);
             History.add(searchField);
             History.add(searchBtn);
+            History.revalidate();
+            History.repaint();
             History.setVisible(true);
         });
         
@@ -321,7 +351,7 @@ class UniversityRecycleZone extends JFrame {
         public LoginFunction() {
             AdminButton.addActionListener(e -> {
                 Login.setSize(550, 300);
-                Login.setLocationRelativeTo(this);
+                Login.setLocationRelativeTo(null);
                 Login.setLayout(null);
                 LoginL = new JLabel("LOGIN");
                 LoginL.setFont(new Font("Arial Black", Font.BOLD, 25));
@@ -369,7 +399,9 @@ class UniversityRecycleZone extends JFrame {
                         } else {
                             JOptionPane.showMessageDialog(Login, "Invalid User/Pass", "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                    } catch (Exception ex) { ex.printStackTrace(); }
+                    } catch (Exception ex) { 
+                        ex.printStackTrace(); 
+                    }
                 });
 
                 clearUser.addActionListener(ev -> {
