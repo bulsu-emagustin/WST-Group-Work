@@ -242,7 +242,11 @@ class UniversityRecycleZone extends JFrame {
 
                 try (Connection con = DBConnection.getConnection()) {
                     // Added WHERE clause to fix your parameter error
-                    String query = "SELECT * FROM Transactions WHERE StudentNo = ?";
+                    String query = "SELECT t.StudentNo, s.Department, t.MaterialType, t.Quantity, t.TransactionID, t.CollectionDate "
+                            + "FROM Transactions t "
+                            + "INNER JOIN Students s ON t.StudentNo = s.StudentNo "
+                            + "WHERE t.StudentNo = ?";
+                    
                     PreparedStatement pst = con.prepareStatement(query);
                     pst.setString(1, studentID);
                     ResultSet rs = pst.executeQuery();
