@@ -20,6 +20,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
@@ -37,19 +38,24 @@ public class AdminFrame extends JFrame {
 
     // Variables (Preserved exactly)
     JFrame AdminF;
-    JPanel mainheader, header, UnivImageP, customMenuBar, mainPanel, panel1, panel2, RecordP, subheader, dashboardP, plasticP, glassP, paperP, metalP, EWasteP, DepartmentDP;
+    JPanel mainheader, header, UnivImageP, customMenuBar, mainPanel, panel1, panel2, panel3, RecordP, subheader1, subheader2,dashboardP, studentP, plasticP, glassP, paperP, metalP, EWasteP, DepartmentDP;
     JTextField IDfield;
-    JLabel UnivIcon, UniversityL, AdminL, TitleL, UnivIDL, DepartmentL, MTypeL, DashT, RegisterL, StudentID, RemoveL;
-    JDialog RegisterD, DeleteD;
+    JLabel UnivIcon, UniversityL, AdminL, TitleL, UnivIDL, DepartmentL1, DepartmentL2, MTypeL, DashT, RegisterL, StudentID, RemoveL, StudentT, RecycleBinL, LocationL, Status;
+    JDialog RegisterD, DeleteD, BinsD;
     ImageIcon UnivL, ScaledUnivIcon;
     Image Logo;
-    JButton AdminButton, RecordButton, RegisterButton, RemoveButton, DashboardButton, SearchButton, AddButton, CancelButton, ConfirmRemoveBtn;
+    JButton AdminButton, RecordButton, RegisterButton, RemoveButton, DashboardButton, StudentButton, BinButton, SearchButton, AddButton, CancelButton, ConfirmRemoveBtn, EmptyBinButton;
+    JButton StudentSearchButton;
     String[][] Values = {};
     String[] Atributes = {"Student ID", "Department", "Material Type", "Quantity", "Transaction", "Date"};
-    JTable Table;
-    JScrollPane TableS;
-    ImageIcon AMainBack1, AMainBack2;
-    JComboBox<String> DTypeBox, MTypeBox;
+    String[] StudentAtributes = {"Student ID", "First Name", "Middle Name", "Last Name", "Course", "Section", "Specialization", "School Year"};
+    JTable Table, StudentTable;
+    JScrollPane TableS, StudentTableS;
+    JTextField StudentIDfield;
+    JLabel StudentIDL;
+    JComboBox<String> StudentDTypeBox;
+    ImageIcon AMainBack1, AMainBack2, AMainBack3;
+    JComboBox<String> DTypeBox, MTypeBox, LocationBox;
 
     public AdminFrame() {
         // Containers & Arrays
@@ -60,13 +66,17 @@ public class AdminFrame extends JFrame {
         mainPanel = new JPanel();
         panel1 = new JPanel();
         panel2 = new JPanel();
+        panel3 = new JPanel();
         customMenuBar = new JPanel();
         RecordP = new JPanel();
-        subheader = new JPanel();
+        subheader1 = new JPanel();
+        studentP = new JPanel();
+        subheader2 = new JPanel();
 
         // Added "All" to the arrays
         String[] DType = {"All Departments", "Information Technology", "Civil Engineering", "Business Administration", "Entrepreneurship", "Education", "Medical Technology", "Criminology"};
         String[] MType = {"All Materials", "Plastic", "Glass", "Paper", "Metal", "E-Waste"};
+        String[] locations = {"Engineering Building", "Canteen", "E-Library", "Pimentel"};
 
         dashboardP = new JPanel();
         plasticP = new JPanel();
@@ -94,6 +104,7 @@ public class AdminFrame extends JFrame {
 
         RegisterD = new JDialog();
         DeleteD = new JDialog();
+        BinsD = new JDialog();
 
         // Backgrounds
         AMainBack1 = new ImageIcon("Admin_Background.jpg");
@@ -106,6 +117,11 @@ public class AdminFrame extends JFrame {
         AMbackground2.setLayout(null);
         AMbackground2.setBounds(0, 0, 1500, 625);
 
+        AMainBack3 = new ImageIcon("Admin_Background.jpg");
+        JLabel AMbackground3 = new JLabel(AMainBack3);
+        AMbackground3.setLayout(null);
+        AMbackground3.setBounds(0, 0, 1500, 625);
+
         // Layouts
         AdminF.setLayout(new BorderLayout());
         mainheader.setLayout(new BorderLayout());
@@ -113,7 +129,8 @@ public class AdminFrame extends JFrame {
         panel1.setLayout(null);
         panel2.setLayout(null);
         RecordP.setLayout(new BorderLayout());
-        subheader.setLayout(null);
+        subheader1.setLayout(null);
+        subheader2.setLayout(null);
         dashboardP.setLayout(null);
 
         // Header Config
@@ -150,17 +167,19 @@ public class AdminFrame extends JFrame {
         RegisterButton = new JButton("Register");
         RemoveButton = new JButton("Remove");
         DashboardButton = new JButton("Dashboard");
+        StudentButton = new JButton("Students");
+        BinButton = new JButton("Recycle Bin");
 
         // Panel 1 (Records)
         TitleL = new JLabel("Recycling Collection Monitoring System");
         TitleL.setFont(new Font("Bell MT", Font.BOLD, 50));
         TitleL.setBounds(310, 0, 1000, 100);
         RecordP.setBounds(150, 100, 1180, 700);
-        subheader.setBackground(Color.white);
-        subheader.setPreferredSize(new Dimension(50, 60));
+        subheader1.setBackground(Color.white);
+        subheader1.setPreferredSize(new Dimension(50, 60));
 
-        DepartmentL = new JLabel("Department: ");
-        DepartmentL.setBounds(30, 10, 100, 30);
+        DepartmentL1 = new JLabel("Department: ");
+        DepartmentL1.setBounds(30, 10, 100, 30);
         DTypeBox = new JComboBox<>(DType);
         DTypeBox.setBounds(105, 10, 170, 30);
 
@@ -197,6 +216,7 @@ public class AdminFrame extends JFrame {
 
         DepartmentDP.setBounds(800, 10, 570, 480);
 
+        //Dashboard Panel Components
         dashboardP.add(plasticChart);
         dashboardP.add(glassChart);
         dashboardP.add(paperChart);
@@ -204,9 +224,37 @@ public class AdminFrame extends JFrame {
         dashboardP.add(ewasteChart);
         dashboardP.add(DepartmentDP);
 
+        //Panel 3 (Student)
+        StudentT = new JLabel("Student Records");
+        StudentT.setFont(new Font("Bell MT", Font.BOLD, 50));
+        StudentT.setBounds(565, 0, 1000, 100);
+        studentP.setLayout(new BorderLayout());
+        studentP.setBounds(150, 100, 1180, 700);
+        subheader2.setBackground(Color.white);
+        subheader2.setPreferredSize(new Dimension(1180, 60));
+
+        DepartmentL2 = new JLabel("Department: ");
+        DepartmentL2.setBounds(30, 10, 100, 30);
+        StudentDTypeBox = new JComboBox<>(DType);
+        StudentDTypeBox.setBounds(105, 10, 170, 30);
+
+        StudentIDL = new JLabel("ID: ");
+        StudentIDL.setBounds(860, 10, 30, 30);
+        StudentIDfield = new JTextField(50);
+        StudentIDfield.setBounds(880, 10, 200, 30);
+
+        StudentSearchButton = new JButton("Search");
+        StudentSearchButton.setBounds(1080, 10, 90, 30);
+
+        DefaultTableModel model2 = new DefaultTableModel(StudentAtributes, 0);
+        StudentTable = new JTable(model2);
+        StudentTable.getTableHeader().setReorderingAllowed(false);
+        StudentTableS = new JScrollPane(StudentTable);
+
         // Navigation
         RecordButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel1"));
         DashboardButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel2"));
+        StudentButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel3"));
 
         // Logout
         AdminButton.addActionListener(e -> {
@@ -219,6 +267,9 @@ public class AdminFrame extends JFrame {
 
         // Search Action
         SearchButton.addActionListener(new FilterRecords(IDfield, DTypeBox, MTypeBox, Table));
+
+        // Student Search Action
+        StudentSearchButton.addActionListener(new FilterStudents(StudentIDfield, StudentDTypeBox, StudentTable));
 
         // Register Dialog Trigger
         RegisterButton.addActionListener(e -> {
@@ -236,10 +287,10 @@ public class AdminFrame extends JFrame {
             JTextField regID = new JTextField();
             regID.setBounds(120, 70, 300, 30);
 
-            DepartmentL = new JLabel("Department: ");
-            DepartmentL.setBounds(45, 130, 100, 50);
+            DepartmentL1 = new JLabel("Department: ");
+            DepartmentL1.setBounds(45, 130, 100, 50);
 
-            // Slice the "All Departments" out for registration
+            
             String[] regDeptsOnly = java.util.Arrays.copyOfRange(DType, 1, DType.length);
             JComboBox<String> regDept = new JComboBox<>(regDeptsOnly);
             regDept.setBounds(120, 140, 300, 30);
@@ -255,7 +306,7 @@ public class AdminFrame extends JFrame {
             RegisterD.add(RegisterL);
             RegisterD.add(StudentID);
             RegisterD.add(regID);
-            RegisterD.add(DepartmentL);
+            RegisterD.add(DepartmentL1);
             RegisterD.add(regDept);
             RegisterD.add(AddButton);
             RegisterD.add(CancelButton);
@@ -294,6 +345,55 @@ public class AdminFrame extends JFrame {
             DeleteD.setVisible(true);
         });
 
+        //Bins Dialog Trigger
+        BinButton.addActionListener(e -> {
+            BinsD = new JDialog(AdminF, "Recycle Bin Status", true);
+            BinsD.setSize(500, 300);
+            BinsD.setLocationRelativeTo(null);
+            BinsD.setLayout(null);
+
+            RecycleBinL = new JLabel("Recycle Bin Status");
+            RecycleBinL.setFont(new Font("Arial", Font.BOLD, 20));
+            RecycleBinL.setBounds(155, 10, 300, 50);
+
+            LocationL = new JLabel("Location: ");
+            LocationL.setBounds(50, 70, 70, 30);
+            LocationBox = new JComboBox<>(locations);
+            LocationBox.setBounds(120, 70, 300, 30);
+
+            Status = new JLabel("Status: ");
+            Status.setBounds(50, 120, 70, 30);
+            JTextArea statusArea = new JTextArea();
+            statusArea.setBounds(120, 120, 300, 30);
+            statusArea.setEditable(false);
+
+            // Load status for the default selected location
+            statusArea.setText(getBinStatus(LocationBox.getSelectedItem().toString()));
+
+            // Update status 
+            LocationBox.addActionListener(ev -> {
+                String selected = LocationBox.getSelectedItem().toString();
+                statusArea.setText(getBinStatus(selected));
+            });
+
+            EmptyBinButton = new JButton("Empty Bin");
+            EmptyBinButton.setBounds(80, 200, 150, 50);
+
+
+            CancelButton = new JButton("Cancel");
+            CancelButton.setBounds(250, 200, 150, 50);
+            CancelButton.addActionListener(ev -> BinsD.dispose());
+
+            BinsD.add(RecycleBinL);
+            BinsD.add(LocationL);
+            BinsD.add(LocationBox);
+            BinsD.add(Status);
+            BinsD.add(statusArea);
+            BinsD.add(EmptyBinButton);
+            BinsD.add(CancelButton);
+            BinsD.setVisible(true);
+        });
+        
         // Dashboard (Pie Chart)
         //instantiate variables
         String[] depts = {"IT", "Engineering", "Business", "Education", "Medical", "Criminology"};
@@ -313,26 +413,47 @@ public class AdminFrame extends JFrame {
         customMenuBar.add(RegisterButton);
         customMenuBar.add(RemoveButton);
         customMenuBar.add(DashboardButton);
+        customMenuBar.add(StudentButton);
+        customMenuBar.add(BinButton);
 
+        //Main Panel
         AdminF.add(mainPanel, BorderLayout.CENTER);
+
+        //Panel 1 Components
         mainPanel.add(panel1, "panel1");
         panel1.add(AMbackground1);
         AMbackground1.add(TitleL);
         AMbackground1.add(RecordP);
-        RecordP.add(subheader, BorderLayout.NORTH);
-        subheader.add(DepartmentL);
-        subheader.add(DTypeBox);
-        subheader.add(MTypeL);
-        subheader.add(MTypeBox);
-        subheader.add(UnivIDL);
-        subheader.add(IDfield);
-        subheader.add(SearchButton);
+        RecordP.add(subheader1, BorderLayout.NORTH);
+        subheader1.add(DepartmentL1);
+        subheader1.add(DTypeBox);
+        subheader1.add(MTypeL);
+        subheader1.add(MTypeBox);
+        subheader1.add(UnivIDL);
+        subheader1.add(IDfield);
+        subheader1.add(SearchButton);
         RecordP.add(TableS, BorderLayout.CENTER);
+        
 
+        //Panel 2 Components
         mainPanel.add(panel2, "panel2");
         panel2.add(AMbackground2);
         AMbackground2.add(DashT);
         AMbackground2.add(dashboardP);
+
+        //Panel 3 Components
+        mainPanel.add(panel3, "panel3");
+        panel3.setLayout(new BorderLayout());
+        panel3.add(AMbackground3);
+        AMbackground3.add(StudentT);
+        AMbackground3.add(studentP);
+        studentP.add(subheader2, BorderLayout.NORTH);
+        subheader2.add(DepartmentL2);
+        subheader2.add(StudentDTypeBox);
+        subheader2.add(StudentIDL);
+        subheader2.add(StudentIDfield);
+        subheader2.add(StudentSearchButton);
+        studentP.add(StudentTableS, BorderLayout.CENTER);
 
         header.add(UnivImageP);
         UnivImageP.add(UnivIcon);
@@ -402,7 +523,7 @@ public class AdminFrame extends JFrame {
         }
 
         public void actionPerformed(ActionEvent e) {
-            
+
             //input checker
             String idText = idF.getText().trim();
 
@@ -411,7 +532,7 @@ public class AdminFrame extends JFrame {
                 JOptionPane.showMessageDialog(parent, "Please enter a valid numeric Student ID.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            
+
             int confirm = JOptionPane.showConfirmDialog(parent, "Delete student and all related records?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 try (Connection con = DBConnection.getConnection()) {
@@ -484,6 +605,72 @@ public class AdminFrame extends JFrame {
                 JOptionPane.showMessageDialog(null, "Search Error: " + ex.getMessage());
             }
         }
+    }
+
+    class FilterStudents implements ActionListener {
+
+        private JTextField idF;
+        private JComboBox<String> dBox;
+        private JTable table;
+
+        public FilterStudents(JTextField i, JComboBox<String> d, JTable t) {
+            this.idF = i;
+            this.dBox = d;
+            this.table = t;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String id = idF.getText().trim();
+            String dept = dBox.getSelectedItem().toString();
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+            String deptSearch = dept.equals("All Departments") ? "%" : dept;
+
+            try (Connection con = DBConnection.getConnection()) {
+                String sql = "SELECT StudentNo, FirstName, MiddleName, LastName, Course, Section, Specialization, SchoolYear "
+                        + "FROM Students "
+                        + "WHERE (StudentNo = ? OR ? = '') "
+                        + "AND Department LIKE ?";
+
+                PreparedStatement pst = con.prepareStatement(sql);
+                pst.setString(1, id);
+                pst.setString(2, id);
+                pst.setString(3, deptSearch);
+
+                ResultSet rs = pst.executeQuery();
+                model.setRowCount(0);
+                while (rs.next()) {
+                    model.addRow(new Object[]{
+                        rs.getInt("StudentNo"),
+                        rs.getString("FirstName"),
+                        rs.getString("MiddleName"),
+                        rs.getString("LastName"),
+                        rs.getString("Course"),
+                        rs.getString("Section"),
+                        rs.getString("Specialization"),
+                        rs.getString("SchoolYear")
+                    });
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Search Error: " + ex.getMessage());
+            }
+        }
+    }
+
+    private String getBinStatus(String location) {
+        try (Connection con = DBConnection.getConnection()) {
+            PreparedStatement pst = con.prepareStatement(
+                "SELECT Status FROM RecycleBins WHERE Location = ?");
+            pst.setString(1, location);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getString("Status"); // Expected values: "Empty", "Half-Empty", "Full"
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return "Unknown";
     }
 
     class AdminStatsLoader {
@@ -599,7 +786,5 @@ public class AdminFrame extends JFrame {
         public int getEWaste() {
             return eWasteTot;
         }
-
     }
-
 }

@@ -29,7 +29,7 @@ public class RecyclingCollectionMonitoringSystem {
 
     //Main Method
     public static void main(String[] args) {
-        new WelcomeFrame();
+        new UniversityRecycleZone();
     }
 }
 
@@ -40,7 +40,7 @@ class UniversityRecycleZone extends JFrame {
     JFrame MainF;
     JPanel header, UnivImageP, leftPanel, UserImageP, MainP, ColumnChart;
     JDialog Login, Contribution, History;
-    JLabel UnivIcon, UserIcon, UniversityL, UserL, AdminL, LoginL, UsernameL, PasswordL, ContributionL, SIDL, MTypeL, QuantityL, StudentCL;
+    JLabel UnivIcon, UserIcon, UniversityL, UserL, AdminL, LoginL, UsernameL, PasswordL, ContributionL, SIDL, MTypeL, QuantityL, StudentCL, LocationL;
     JButton AdminButton, AddContriButton, ViewContriButton, ClearButton, EnterButton, CancelButton, SearchButton;
     JPasswordField Passwordfield;
     JTextField Usernamefield, IDfield, Quantityfield;
