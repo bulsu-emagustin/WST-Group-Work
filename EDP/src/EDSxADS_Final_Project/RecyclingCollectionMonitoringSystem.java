@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import java.sql.ResultSet;
 import javax.swing.table.DefaultTableModel;
 import java.sql.SQLException;
+import javax.swing.JPasswordField;
 
 public class RecyclingCollectionMonitoringSystem {
 
@@ -41,7 +42,8 @@ class UniversityRecycleZone extends JFrame {
     JDialog Login, Contribution, History;
     JLabel UnivIcon, UserIcon, UniversityL, UserL, AdminL, LoginL, UsernameL, PasswordL, ContributionL, SIDL, MTypeL, QuantityL, StudentCL;
     JButton AdminButton, AddContriButton, ViewContriButton, ClearButton, EnterButton, CancelButton, SearchButton;
-    JTextField Usernamefield, Passworfield, IDfield, Quantityfield;
+    JPasswordField Passwordfield;
+    JTextField Usernamefield, IDfield, Quantityfield;
     JComboBox<String> MTypeBox;
     JTable Table;
     JScrollPane TableS;
@@ -99,7 +101,7 @@ class UniversityRecycleZone extends JFrame {
         new LoginFunction();
 
         //Left panel Config
-        leftPanel.setBackground(new Color(72, 209, 204));
+        leftPanel.setBackground(new Color(50,205,50));
         leftPanel.setPreferredSize(new Dimension(400, 800));
         leftPanel.setLayout(null);
         UserImageP.setBounds(50, 50, 300, 250);
@@ -276,7 +278,7 @@ class UniversityRecycleZone extends JFrame {
         });
         
         //Main Panel
-        MainP.setBackground(Color.WHITE);
+        MainP.setBackground(new Color(240,255,255));
         MainP.setPreferredSize(new Dimension(1, 1));
         MainP.setLayout(null);    
         StudentCL = new JLabel("Students Weekly");
@@ -337,16 +339,16 @@ class UniversityRecycleZone extends JFrame {
                 PasswordL.setBounds(50, 110, 100, 25);
                 Login.add(PasswordL);
 
-                Passworfield = new JTextField();
-                Passworfield.setBounds(115, 110, 285, 30);
-                Login.add(Passworfield);
+                Passwordfield = new JPasswordField();
+                Passwordfield.setBounds(115, 110, 285, 30);
+                Login.add(Passwordfield);
 
                 EnterButton = new JButton("Enter");
                 EnterButton.setBounds(150, 180, 100, 40);
 
                 EnterButton.addActionListener(ev -> {
                     String user = Usernamefield.getText().trim();
-                    String pass = Passworfield.getText();
+                    String pass = new String(Passwordfield.getPassword());
 
                     try (Connection con = DBConnection.getConnection()) {
                         String sql = "SELECT * FROM Admins WHERE Username = ? AND Password = ?";
@@ -368,7 +370,7 @@ class UniversityRecycleZone extends JFrame {
 
                 clearUser.addActionListener(ev -> {
                     Usernamefield.setText("");
-                    Passworfield.setText("");
+                    Passwordfield.setText("");
                 });
                 
                 Login.add(EnterButton);
