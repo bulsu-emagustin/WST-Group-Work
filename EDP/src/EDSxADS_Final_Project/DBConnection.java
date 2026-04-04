@@ -27,7 +27,12 @@ public class DBConnection {
                                "Username VARCHAR(100) PRIMARY KEY, " +
                                "Password INT)");
             
-            stmt.executeUpdate ("INSERT IGNORE INTO Admins (Username, Password) VALUES ('Akira', 1234), ('Ernesto', 1234)");
+            //create table for recycle bins 
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Bins (" +
+                           "BinID INT AUTO_INCREMENT PRIMARY KEY, " +
+                           "LocationName VARCHAR(100) NOT NULL, " +
+                           "Status ENUM('Empty', 'Half-Full', 'Full') DEFAULT 'Empty', " +
+                           "LastEmptied DATETIME DEFAULT CURRENT_TIMESTAMP)");
             
             // Create Registered Table
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Students (" +
@@ -43,29 +48,34 @@ public class DBConnection {
                                      "CollectionDate DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                                      "CONSTRAINT fk_student FOREIGN KEY (StudentNo) " +
                                      "REFERENCES Students(StudentNo) ON DELETE CASCADE ON UPDATE CASCADE)";
-            
             stmt.executeUpdate(sqlTransactions);
 
-            // We MUST add students here first, or the Transaction inserts will FAIL.
+            //
             if (!hasData(stmt, "Students")) {
                 stmt.executeUpdate("INSERT INTO Students (StudentNo, Department) VALUES " +
                                    "(2024104677, 'Information Technology'), " +
-                                   "(2024104678, 'Business Administration'), " +
-                                   "(2024104679, 'Civil Engineering')");
+                                   "(2024104678, 'Computer Science'), " +
+                                   "(2024104679, 'Engineering')");
             }
 
             // Initial Data Handler for Transactions
             if (!hasData(stmt, "Transactions")) {
-                String TransacValue = "INSERT INTO Transactions (StudentNo, MaterialType, Quantity) VALUES "
+                stmt.executeUpdate ("INSERT INTO Transactions (StudentNo, MaterialType, Quantity) VALUES "
                         + "(2024104677, 'Plastic', 12), "
                         + "(2024104677, 'Plastic', 20), "
                         + "(2024104677, 'Paper', 32), "
                         + "(2024104678, 'Metal', 2), "
-                        + "(2024104679, 'Textile', 19)";
-                stmt.executeUpdate(TransacValue);
+                        + "(2024104679, 'Textile', 19)");
+                
             }
 
-            
+            if (!hasData(stmt, "Transactions")) {
+                stmt.executeUpdate("INSERT INTO Bins (LocationName, Status) VALUES " +
+                               "('Engineering Building', 'Empty'), " +
+                               "('Canteen', 'Half-Full'), " +
+                               "('ELibrary', 'Empty'), " +
+                               "('Pimentel Hall', 'Full')");
+            }
 
         } catch (SQLException se) {
             se.printStackTrace();
