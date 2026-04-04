@@ -69,7 +69,7 @@ public class DBConnection {
                 
             }
 
-            if (!hasData(stmt, "Transactions")) {
+            if (!hasData(stmt, "Bins")) {
                 stmt.executeUpdate("INSERT INTO Bins (LocationName, Status) VALUES " +
                                "('Engineering Building', 'Empty'), " +
                                "('Canteen', 'Half-Full'), " +
