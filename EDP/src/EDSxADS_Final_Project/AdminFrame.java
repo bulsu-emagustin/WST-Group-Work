@@ -256,6 +256,12 @@ public class AdminFrame extends JFrame {
         DashboardButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel2"));
         StudentButton.addActionListener(new PanelSwitcher(mainPanel, cl, "panel3"));
 
+        // Load initial table data automatically
+        FilterRecords initialRecordFilter = new FilterRecords(IDfield, DTypeBox, MTypeBox, Table);
+        FilterStudents initialStudentFilter = new FilterStudents(StudentIDfield, StudentDTypeBox, StudentTable);
+        initialRecordFilter.actionPerformed(null);
+        initialStudentFilter.actionPerformed(null);
+
         // Logout
         AdminButton.addActionListener(e -> {
             int response = JOptionPane.showConfirmDialog(null, "Logout?", "Confirm", JOptionPane.YES_NO_OPTION);
@@ -266,10 +272,10 @@ public class AdminFrame extends JFrame {
         });
 
         // Search Action
-        SearchButton.addActionListener(new FilterRecords(IDfield, DTypeBox, MTypeBox, Table));
+        SearchButton.addActionListener(initialRecordFilter);
 
         // Student Search Action
-        StudentSearchButton.addActionListener(new FilterStudents(StudentIDfield, StudentDTypeBox, StudentTable));
+        StudentSearchButton.addActionListener(initialStudentFilter);
 
         // Register Dialog Trigger
         RegisterButton.addActionListener(e -> {
@@ -378,6 +384,20 @@ public class AdminFrame extends JFrame {
 
             EmptyBinButton = new JButton("Empty Bin");
             EmptyBinButton.setBounds(80, 200, 150, 50);
+            EmptyBinButton.addActionListener(ev -> {
+                String loc = LocationBox.getSelectedItem().toString();
+                try (Connection con = DBConnection.getConnection()) {
+                    PreparedStatement pst = con.prepareStatement("UPDATE RecycleBins SET Status = 'Empty' WHERE Location = ?");
+                    pst.setString(1, loc);
+                    if (pst.executeUpdate() > 0) {
+                        statusArea.setText("Empty");
+                        JOptionPane.showMessageDialog(BinsD, "Bin at " + loc + " has been emptied.");
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(BinsD, "Error emptying bin.");
+                }
+            });
 
 
             CancelButton = new JButton("Cancel");

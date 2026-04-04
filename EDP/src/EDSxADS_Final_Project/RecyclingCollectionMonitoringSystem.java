@@ -29,7 +29,7 @@ public class RecyclingCollectionMonitoringSystem {
 
     //Main Method
     public static void main(String[] args) {
-        new AdminFrame();
+        new WelcomeFrame();
     }
 }
 
@@ -384,7 +384,8 @@ class UniversityRecycleZone extends JFrame {
                     String user = Usernamefield.getText().trim();
                     String pass = new String(Passwordfield.getPassword());
 
-                    try (Connection con = DBConnection.getConnection()) {
+                    // Updated to use the "Admin" role for the connection
+                    try (Connection con = DBConnection.getConnection("Admin")) {
                         String sql = "SELECT * FROM Admins WHERE Username = ? AND Password = ?";
                         PreparedStatement pst = con.prepareStatement(sql);
                         pst.setString(1, user);
@@ -399,8 +400,11 @@ class UniversityRecycleZone extends JFrame {
                         } else {
                             JOptionPane.showMessageDialog(Login, "Invalid User/Pass", "Error", JOptionPane.ERROR_MESSAGE);
                         }
-                    } catch (Exception ex) { 
+                    } catch (SQLException ex) { 
                         ex.printStackTrace(); 
+                        JOptionPane.showMessageDialog(Login, "Database Connection Error: " + ex.getMessage());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                     }
                 });
 

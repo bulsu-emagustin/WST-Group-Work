@@ -11,7 +11,7 @@ public class DBConnection {
 
     private static final String BASE_URL = "jdbc:mysql://localhost:3306/";
     private static final String DB_NAME = "Recycling";
-    private static final String USER = "root"; // Root for init
+    private static final String USER = "root"; 
     private static final String PASS = "";
 
     // Role-specific credentials
@@ -20,41 +20,51 @@ public class DBConnection {
     private static final String STUDENT_DB_USER = "Student";
 
     public static void initDatabase() {
-        // Connect to the server without a database name first to create the DB
         try (Connection conn = DriverManager.getConnection(BASE_URL, USER, PASS);
              Statement stmt = conn.createStatement()) {
 
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + DB_NAME);
             stmt.executeUpdate("USE " + DB_NAME);
 
-            // Create Admins table
+            // 1. Admins Table
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Admins (" +
                                "Username VARCHAR(100) PRIMARY KEY, " +
                                "Password INT)");
-            
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Bins (" +
+
+            // 2. RecycleBins Table (Updated name and columns for AdminFrame compatibility)
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS RecycleBins (" +
                                "BinID INT AUTO_INCREMENT PRIMARY KEY, " +
-                               "LocationName VARCHAR(100) NOT NULL, " +
+                               "Location VARCHAR(100) NOT NULL, " +
                                "Status ENUM('Empty', 'Half-Full', 'Full') DEFAULT 'Empty')");
-            
+
+            // 3. Students Table
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Students (" +
                                "StudentNo INT PRIMARY KEY, " +
-                               "Department VARCHAR(100))");
+                               "FirstName VARCHAR(50), " +
+                               "MiddleName VARCHAR(50), " +
+                               "LastName VARCHAR(50), " +
+                               "Department VARCHAR(100), " +
+                               "Course VARCHAR(50), " +
+                               "Section VARCHAR(20), " +
+                               "Specialization VARCHAR(50), " +
+                               "SchoolYear VARCHAR(20))");
 
-            // Transactions table creation
+            // 4. Transactions Table (Includes Foreign Keys for Students and Bins)
             String sqlTransactions = "CREATE TABLE IF NOT EXISTS Transactions (" +
                          "TransactionID INT AUTO_INCREMENT PRIMARY KEY, " +
-                         "BinID INT, " + // <--- ADD THIS
+                         "BinID INT, " + 
                          "StudentNo INT NOT NULL, " +
                          "MaterialType VARCHAR(50) NOT NULL, " +
                          "Quantity INT NOT NULL, " +
                          "CollectionDate DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                          "CONSTRAINT fk_student FOREIGN KEY (StudentNo) " +
-                         "REFERENCES Students(StudentNo) ON DELETE CASCADE ON UPDATE CASCADE)";
+                         "REFERENCES Students(StudentNo) ON DELETE CASCADE ON UPDATE CASCADE, " +
+                         "CONSTRAINT fk_bin FOREIGN KEY (BinID) " +
+                         "REFERENCES RecycleBins(BinID) ON DELETE SET NULL)";
 
             stmt.executeUpdate(sqlTransactions);
 
-            // Permission Management - Using try-catch inside for User Creation to avoid "User already exists" errors
+            // 5. Permission Management
             try {
                 stmt.executeUpdate("CREATE USER IF NOT EXISTS '" + ADMIN_DB_USER + "'@'localhost' IDENTIFIED BY '" + ADMIN_DB_PASS + "'");
                 stmt.executeUpdate("GRANT ALL PRIVILEGES ON " + DB_NAME + ".* TO '" + ADMIN_DB_USER + "'@'localhost'");
@@ -64,33 +74,47 @@ public class DBConnection {
                 
                 stmt.executeUpdate("FLUSH PRIVILEGES");
             } catch (SQLException e) {
-                System.out.println("Note: Users might already exist or permission grant failed.");
+                System.out.println("Note: User permissions setup skipped (users may exist).");
             }
 
-            // Insert Initial Data
-            if (!hasData(stmt, "Students")) {
-                stmt.executeUpdate("INSERT INTO Students (StudentNo, Department) VALUES (2024104677, 'Information Technology'), (2024104678, 'Computer Science')");
-            }
-
-            if (!hasData(stmt, "Bins")) {
-                stmt.executeUpdate("INSERT INTO Bins (LocationName, Status) VALUES " +
-                                   "('Engineering Building', 'Empty'), ('Canteen', 'Half-Full')");
-            }
-            
-            // Added check for Admins so you have a default login
-            if (!hasData(stmt, "Admins")) {
-                stmt.executeUpdate("INSERT INTO Admins (Username, Password) VALUES ('admin', 12345)");
-            }
+            // 6. Seed Initial Data
+            seedInitialData(stmt);
 
         } catch (SQLException se) {
             se.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Connection Error: " + se.getMessage());
+            JOptionPane.showMessageDialog(null, "Database Initialization Error: " + se.getMessage());
+        }
+    }
+
+    private static void seedInitialData(Statement stmt) throws SQLException {
+        // Seed Students (One for each major department to populate Dashboard charts)
+        if (!hasData(stmt, "Students")) {
+            stmt.executeUpdate("INSERT INTO Students (StudentNo, FirstName, LastName, Department) VALUES " +
+                "(2024104677, 'Akila', 'Cruz', 'Information Technology'), " +
+                "(2024104678, 'Ernesto', 'Agustin', 'Civil Engineering'), " +
+                "(2024104679, 'Yza', 'Pascua', 'Business Administration'), " +
+                "(2024104680, 'Ian', 'Gabriel', 'Education'), " +
+                "(2024104681, 'Kath', 'Salidaga', 'Medical Technology'), " +
+                "(2024104682, 'Sherlock', 'Holmes', 'Criminology')");
+        }
+
+        // Seed Bins (Matched to location options in AdminFrame)
+        if (!hasData(stmt, "RecycleBins")) {
+            stmt.executeUpdate("INSERT INTO RecycleBins (Location, Status) VALUES " +
+                "('Engineering Building', 'Empty'), " + 
+                "('Canteen', 'Empty'), " + 
+                "('Pimentel', 'Empty'), " + 
+                "('E-Library', 'Empty')");
+        }
+        
+        // Seed Default Admin
+        if (!hasData(stmt, "Admins")) {
+            stmt.executeUpdate("INSERT INTO Admins (Username, Password) VALUES ('admin', 12345)");
         }
     }
 
     private static boolean hasData(Statement stmt, String tableName) throws SQLException {
-        
-        try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + DB_NAME + "." + tableName)) {
+        try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + tableName)) {
             return rs.next() && rs.getInt(1) > 0;
         }
     }
@@ -106,7 +130,6 @@ public class DBConnection {
         }
 
         try {
-            
             return DriverManager.getConnection(BASE_URL + DB_NAME, dbUser, dbPass);
         } catch (SQLException e) {
             System.err.println("Database Access Denied for: " + role + " - " + e.getMessage());
@@ -114,7 +137,7 @@ public class DBConnection {
         }
     }
 
-    // Overloaded original method
+    // Default connection (Admin)
     public static Connection getConnection() {
         return getConnection("Admin"); 
     }
