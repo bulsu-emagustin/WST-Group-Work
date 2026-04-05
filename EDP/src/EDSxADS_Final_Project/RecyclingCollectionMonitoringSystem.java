@@ -29,7 +29,7 @@ public class RecyclingCollectionMonitoringSystem {
 
     //Main Method
     public static void main(String[] args) {
-        new WelcomeFrame();
+        new UniversityRecycleZone();
     }
 }
 
@@ -44,7 +44,7 @@ class UniversityRecycleZone extends JFrame {
     JButton AdminButton, AddContriButton, ViewContriButton, ClearButton, EnterButton, CancelButton, SearchButton;
     JPasswordField Passwordfield;
     JTextField Usernamefield, IDfield, Quantityfield;
-    JComboBox<String> MTypeBox;
+    JComboBox<String> MTypeBox, LTypeBox;
     JTable Table;
     JScrollPane TableS;
     ImageIcon MainBack, UnivL, UserIconL, ScaledUnivIcon, ScaledUserIcon;
@@ -63,6 +63,7 @@ class UniversityRecycleZone extends JFrame {
         Contribution = new JDialog(this, "Contribution Form", true);
         History = new JDialog(this, "User History", true);
         String[] Mtype = {"Plastic", "Glass", "Paper", "Metal", "E-Waste"};
+        String[] LType = {"Engineering Building", "Canteen", "E-Library", "Pimentel"};
         MainP = new JPanel(); 
         ColumnChart = new WeeklyColumnChart();
 
@@ -125,7 +126,7 @@ class UniversityRecycleZone extends JFrame {
 
         //Add Contribution Dialog
         AddContriButton.addActionListener(e -> {
-            Contribution.setSize(500, 350);
+            Contribution.setSize(500, 400);
             Contribution.setLocationRelativeTo(this);
             Contribution.setLayout(null);
             ContributionL = new JLabel("CONTRIBUTION");
@@ -140,15 +141,19 @@ class UniversityRecycleZone extends JFrame {
             MTypeL.setBounds(40, 93, 100, 80);
             MTypeBox = new JComboBox<>(Mtype);
             MTypeBox.setBounds(130, 120, 300, 30);
+            LocationL = new JLabel("Location: ");
+            LocationL.setBounds(68, 180, 100, 30);
+            LTypeBox = new JComboBox<>(LType);
+            LTypeBox.setBounds(130, 180, 300, 30);
             QuantityL = new JLabel("Quantity: ");
-            QuantityL.setBounds(70, 150, 70, 80);
-            Quantityfield = new JTextField(100);
-            Quantityfield.setBounds(130, 175, 300, 30);
+            QuantityL.setBounds(70, 210, 70, 80);
+            Quantityfield = new JTextField(50);
+            Quantityfield.setBounds(130, 235, 300, 30);
             EnterButton = new JButton("Enter");
-            EnterButton.setBounds(90, 230, 130, 50);
+            EnterButton.setBounds(90, 285, 130, 50);
             EnterButton.setFont(new Font("Arial", Font.BOLD, 25));
             CancelButton = new JButton("Cancel");
-            CancelButton.setBounds(270, 230, 130, 50);
+            CancelButton.setBounds(270, 285, 130, 50);
             CancelButton.setFont(new Font("Arial", Font.BOLD, 25));
 
             Contribution.add(SIDL);
@@ -156,6 +161,8 @@ class UniversityRecycleZone extends JFrame {
             Contribution.add(IDfield);
             Contribution.add(MTypeL);
             Contribution.add(MTypeBox);
+            Contribution.add(LocationL);
+            Contribution.add(LTypeBox);
             Contribution.add(QuantityL);
             Contribution.add(Quantityfield);
             Contribution.add(EnterButton);
@@ -243,13 +250,12 @@ class UniversityRecycleZone extends JFrame {
             History.setSize(850, 450);
             History.setLocationRelativeTo(this);
             History.setLayout(null);
-
             JLabel SIDL_History = new JLabel("School ID: ");
-            SIDL_History.setBounds(400, 13, 100, 35);
+            SIDL_History.setBounds(460, 13, 100, 30);
             JTextField searchField = new JTextField(50);
-            searchField.setBounds(470, 13, 200, 35);
-            JButton searchBtn = new JButton("Search");
-            searchBtn.setBounds(680, 13, 100, 35);
+            searchField.setBounds(522, 13, 200, 30);
+            SearchButton = new JButton("Search");
+            SearchButton.setBounds(720, 13, 100, 30);
 
             String[] columns = {"Transaction ID", "Student No", "Material", "Quantity", "Department", "Date"};
             DefaultTableModel model = new DefaultTableModel(columns, 0);
@@ -257,9 +263,9 @@ class UniversityRecycleZone extends JFrame {
             // Using class variables
             Table = new JTable(model); 
             TableS = new JScrollPane(Table); 
-            TableS.setBounds(10, 60, 810, 330);
+            TableS.setBounds(10, 60, 810, 354);
 
-            searchBtn.addActionListener(searchEv -> {
+            SearchButton.addActionListener(searchEv -> {
                 String studentIDStr = searchField.getText().trim();
                 if (studentIDStr.isEmpty()) {
                     JOptionPane.showMessageDialog(History, "Please enter a Student Number.");
@@ -267,7 +273,7 @@ class UniversityRecycleZone extends JFrame {
                 }
 
                 try (Connection con = DBConnection.getConnection()) {
-                    String query = "SELECT t.StudentNo, s.Department, t.MaterialType, t.Quantity, t.TransactionID, t.CollectionDate "
+                    String query = "SELECT t.TransactionID, t.StudentNo, s.Department, t.MaterialType, t.Quantity, t.CollectionDate "
                             + "FROM Transactions t "
                             + "INNER JOIN Students s ON t.StudentNo = s.StudentNo "
                             + "WHERE t.StudentNo = ?";
@@ -305,7 +311,7 @@ class UniversityRecycleZone extends JFrame {
             History.add(TableS);
             History.add(SIDL_History);
             History.add(searchField);
-            History.add(searchBtn);
+            History.add(SearchButton);
             History.revalidate();
             History.repaint();
             History.setVisible(true);

@@ -42,7 +42,7 @@ public class PieChartPanel extends JPanel {
             startAngle += angle;
         }
 
-        // Legend
+        // Legends
         int y = 20;
         for (int i = 0; i < labels.length; i++) {
             g2.setColor(colors[i]);
