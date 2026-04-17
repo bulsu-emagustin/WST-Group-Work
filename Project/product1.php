@@ -410,7 +410,7 @@
   <a href="index.php">Home</a>
   <a href="product1.php" class="active">Products</a>
   <a href="product1.php">New Arrivals</a>
-  <a href="about.php">About Us</a>
+  <a href="aboutus.php">About Us</a>
 </nav>
 
 
