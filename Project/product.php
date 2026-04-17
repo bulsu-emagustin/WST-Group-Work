@@ -378,10 +378,10 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#">Home</a>
-  <a href="#" class="active">Products</a>
-  <a href="#">New Arrivals</a>
-  <a href="#">About Us</a>
+  <a href="index.php">Home</a>
+  <a href="product1.php" class="active">Products</a>
+  <a href="product1.php">New Arrivals</a>
+  <a href="about.php">About Us</a>
 </nav>
 
 <!-- BREADCRUMB -->

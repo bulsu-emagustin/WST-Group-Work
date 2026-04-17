@@ -407,10 +407,10 @@
 
 
 <nav>
-  <a href="#">Home</a>
-  <a href="#" class="active">Products</a>
-  <a href="#">New Arrivals</a>
-  <a href="#">About Us</a>
+  <a href="index.php">Home</a>
+  <a href="product1.php" class="active">Products</a>
+  <a href="product1.php">New Arrivals</a>
+  <a href="about.php">About Us</a>
 </nav>
 
 
@@ -437,6 +437,10 @@
 
 
   <div class="product-grid" id="productGrid">
+
+<a href="">
+
+</a>
 
     <div class="product-card" data-category="action fantasy">
       <div class="product-image">

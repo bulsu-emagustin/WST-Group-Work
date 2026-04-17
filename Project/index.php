@@ -163,9 +163,9 @@ body {
 <!-- ===== SUB NAV ===== -->
 <div class="sub-nav">
   <a class="active" href="#">HOME</a>
-  <a href="#">PRODUCTS</a>
-  <a href="#">NEW ARRIVALS</a>
-  <a href="#">ABOUT US</a>
+  <a href="product1.php">PRODUCTS</a>
+  <a href="product1.php">NEW ARRIVALS</a>
+  <a href="about.php">ABOUT US</a>
 </div>
 
 <!-- ===== HERO ===== -->

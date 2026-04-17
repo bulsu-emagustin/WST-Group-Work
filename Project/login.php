@@ -86,7 +86,7 @@
         </div>
 
         <p class="text-center small">
-          New here? <span class="text-danger">Create an account</span>
+          New here? <span class="text-danger"><a href="register.php">Create an account</a></span>
         </p>
 
       </div>
