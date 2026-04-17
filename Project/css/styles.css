@@ -17,3 +17,96 @@ body {
 .user-avatar img {
   width: 100%;
 }
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+.header {
+    background-color: #0b0b0b;
+    color: white;
+    border-bottom: 2px solid red;
+}
+
+/* TOP HEADER */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+}
+
+/* LOGO */
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo span {
+    color: red;
+}
+
+/* SEARCH BAR */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: #1a1a1a;
+    border-radius: 20px;
+    padding: 5px 10px;
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 5px;
+}
+
+.search-bar button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+/* PROFILE ICON */
+.profile-icon {
+    width: 35px;
+    height: 35px;
+    background-color: gray;
+    border-radius: 50%;
+}
+
+/* NAVBAR */
+.navbar {
+    border-top: 1px solid #222;
+    padding: 10px 0;
+}
+
+.navbar ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    gap: 40px;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: #aaa;
+    font-size: 14px;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.navbar a:hover,
+.navbar .active {
+    color: white;
+    border-bottom: 2px solid red;
+    padding-bottom: 5px;
+}
