@@ -2,33 +2,13 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname= "Project_WST";
-
-
-
-// // Create connection
-// $conn = new mysqli($servername, $username, $password);
-
-// // // Check connection
-// // if ($conn->connect_error) {
-// //   die("Connection failed: " . $conn->connect_error);
-// // }
-
-// // Check connection
-// if (mysqli_connect_error()) {
-//     die("Database connection failed: " . mysqli_connect_error());
-//   }
-
-// echo "Connected successfully";
+$dbname= "project_WST";
 
 try {
     $conn = new PDO("mysql:host=$servername;port=3306", $username, $password);
-    // set the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    //echo "Connected successfully";
 
     $sql = "CREATE DATABASE IF NOT EXISTS ". $dbname;
-    // use exec() because no results are returned
     try {
         $conn->exec($sql);
     } catch (PDOException $th) {
@@ -37,7 +17,15 @@ try {
 
     $sql = "use ". $dbname;
     $conn->exec($sql);
-    //sql to create login
+
+    $sql = "use ". $dbname;
+    $conn->exec($sql);
+
+    $counter = 0; // ← Add this line
+    
+    // =============================================
+    // LOGIN TABLE
+    // =============================================
     $query = "CREATE TABLE IF NOT EXISTS login (
         id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         first_name VARCHAR(200) NOT NULL,
@@ -75,16 +63,13 @@ try {
             $conn->beginTransaction();
             foreach ($data as $row)
             {
-
                 $check = $conn->prepare("SELECT COUNT(*) FROM login WHERE username=?");
                 $check->execute([$row['0']]);
 
                 if($check->fetchColumn() == 0){
                     $query_i->execute($row);
                 }
-
             }
-
             $conn->commit();
             
         }catch (Exception $e){
@@ -92,51 +77,63 @@ try {
             throw $e;
         }
         }
-        
 
     } catch (PDOException $th) {
         echo "Error in creating Table";
         echo $th;
     }
+
+    // =============================================
+    // BOOKS TABLE (updated to include all columns used in XML export)
+    // =============================================
     $query_create_books = "CREATE TABLE IF NOT EXISTS books (
         id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(100) NOT NULL,
         excerpt TEXT,
-        image VARCHAR(255)
+        image VARCHAR(255),
+        category VARCHAR(100),
+        author VARCHAR(200),
+        publish_date DATE,
+        price DECIMAL(10,2),
+        media VARCHAR(255),
+        media_type VARCHAR(50)
         )";
     
     try {
         $conn->exec($query_create_books);
 
-
         $data_books = [
-            ['Julius Ceasar', ' Roman general and statesman known for conquering Gaul, winning a major civil war, and acting as dictator, which effectively transformed the Roman Republic into the Roman Empire.', 'images/JuliusCeasar.jpg'],
-            ['Napoleon Bonaparte', 'French military and political leader who rose to prominence during the French Revolution, crowning himself Emperor of the French in 1804.', 'images/Napoleon.jpg'],
-            ['Socrates', 'Philosopher known for his contributions to Western philosophy.', 'images/Socrates.jpg']
+            ['Julius Ceasar', ' Roman general and statesman known for conquering Gaul, winning a major civil war, and acting as dictator, which effectively transformed the Roman Republic into the Roman Empire.', 'images/JuliusCeasar.jpg', 'History', 'Unknown', '2020-01-01', 9.99, '', ''],
+            ['Napoleon Bonaparte', 'French military and political leader who rose to prominence during the French Revolution, crowning himself Emperor of the French in 1804.', 'images/Napoleon.jpg', 'History', 'Unknown', '2020-01-01', 9.99, '', ''],
+            ['Socrates', 'Philosopher known for his contributions to Western philosophy.', 'images/Socrates.jpg', 'Philosophy', 'Unknown', '2020-01-01', 9.99, '', '']
         ];
 
         if ($counter == 0) {
         $query_insert_books = $conn->prepare("INSERT INTO books (
             title,
             excerpt,
-            image
-        ) VALUES (?,?,?)");
+            image,
+            category,
+            author,
+            publish_date,
+            price,
+            media,
+            media_type
+        ) VALUES (?,?,?,?,?,?,?,?,?)");
 
         try {
             $conn->beginTransaction();
 
             foreach ($data_books as $row)
             {
-
                 $check = $conn->prepare("SELECT COUNT(*) FROM books WHERE title=?");
-                $check->execute([$row['0']]);;
+                $check->execute([$row['0']]);
 
                 if($check->fetchColumn() == 0){
                     $query_insert_books->execute($row);
                 }
-
             }
-        $counter++;
+            $counter++;
             $conn->commit();
         }catch (Exception $e){
             $conn->rollback();
@@ -144,7 +141,96 @@ try {
         }
         }
 
+    } catch (PDOException $th) {
+        echo "Error in creating Table";
+        echo $th;
+    }
 
+    // =============================================
+    // ACCOUNTS TABLE
+    // =============================================
+    $query_create_accounts = "CREATE TABLE IF NOT EXISTS accounts (
+        id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        login_id INT(11) UNSIGNED NOT NULL,
+        account_type ENUM('customer', 'admin', 'seller') DEFAULT 'customer',
+        phone VARCHAR(20),
+        address TEXT,
+        city VARCHAR(100),
+        province VARCHAR(100),
+        zip_code VARCHAR(10),
+        is_active TINYINT(1) DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (login_id) REFERENCES login(id) ON DELETE CASCADE
+    )";
+
+    try {
+        $conn->exec($query_create_accounts);
+    } catch (PDOException $th) {
+        echo "Error in creating Table";
+        echo $th;
+    }
+
+    // =============================================
+    // CARTS TABLE
+    // =============================================
+    $query_create_carts = "CREATE TABLE IF NOT EXISTS carts (
+        id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        account_id INT(11) UNSIGNED NOT NULL,
+        book_id INT(11) UNSIGNED NOT NULL,
+        quantity INT(11) NOT NULL DEFAULT 1,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE,
+        FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+    )";
+
+    try {
+        $conn->exec($query_create_carts);
+    } catch (PDOException $th) {
+        echo "Error in creating Table";
+        echo $th;
+    }
+
+    // =============================================
+    // TRANSACTIONS TABLE
+    // =============================================
+    $query_create_transactions = "CREATE TABLE IF NOT EXISTS transactions (
+        id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        account_id INT(11) UNSIGNED NOT NULL,
+        total_amount DECIMAL(10,2) NOT NULL,
+        status ENUM('pending', 'paid', 'shipped', 'completed', 'cancelled') DEFAULT 'pending',
+        payment_method ENUM('cash', 'gcash', 'credit_card', 'bank_transfer') DEFAULT 'cash',
+        shipping_address TEXT,
+        notes TEXT,
+        ordered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+    )";
+
+    try {
+        $conn->exec($query_create_transactions);
+    } catch (PDOException $th) {
+        echo "Error in creating Table";
+        echo $th;
+    }
+
+    // =============================================
+    // TRANSACTION ITEMS TABLE
+    // =============================================
+    $query_create_transaction_items = "CREATE TABLE IF NOT EXISTS transaction_items (
+        id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        transaction_id INT(11) UNSIGNED NOT NULL,
+        book_id INT(11) UNSIGNED NOT NULL,
+        quantity INT(11) NOT NULL DEFAULT 1,
+        unit_price DECIMAL(10,2) NOT NULL,
+        subtotal DECIMAL(10,2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
+        FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+        FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE RESTRICT
+    )";
+
+    try {
+        $conn->exec($query_create_transaction_items);
     } catch (PDOException $th) {
         echo "Error in creating Table";
         echo $th;

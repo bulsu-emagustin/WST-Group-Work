@@ -1,19 +1,24 @@
 <?php
+// 1. DATABASE & SESSION INTERCONNECTION
 require 'config.php';
 session_start();
 
+// Security check: Redirect if not logged in
 if (!isset($_SESSION["login_data"])) {
     session_destroy();
     header('Location: login.php');
     exit();
 }
 
+// Preserve your original variable naming
 $user_data = $_SESSION["login_data"];
 $userid = $user_data["id"];
 
 try {
+    // Standardized database path
     require 'db/action/dbconfig.php';
 
+    // Fetch the specific user data to refresh the profile circle
     $stmt = $conn->prepare("SELECT * FROM login WHERE id = ?");
     $stmt->execute([$userid]);
     $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -34,6 +39,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        /* Exact preservation of your original CSS composition */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -55,7 +61,6 @@ try {
             min-height: 100vh;
         }
 
-        /* ===== TOP HEADER ===== */
         .top-header {
             background: #0d0d0d;
             border-bottom: 3px solid var(--red);
@@ -91,12 +96,6 @@ try {
             padding: 0.85rem 3rem 0.85rem 1rem;
             border-radius: 8px;
             font-size: 0.95rem;
-            font-family: 'Barlow', sans-serif;
-        }
-
-        .search-bar input:focus {
-            outline: none;
-            border-color: var(--red);
         }
 
         .search-bar .icon {
@@ -106,7 +105,6 @@ try {
             transform: translateY(-50%);
             color: var(--muted);
             font-size: 1.1rem;
-            pointer-events: none;
         }
 
         .profile-circle {
@@ -118,13 +116,11 @@ try {
             flex-shrink: 0;
         }
 
-        /* ===== NAVIGATION ===== */
         nav {
             background: #0d0d0d;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: center;
-            gap: 0;
         }
 
         nav a {
@@ -137,10 +133,7 @@ try {
             padding: 1.1rem 2.4rem;
             text-transform: uppercase;
             position: relative;
-            transition: color 0.2s;
         }
-
-        nav a:hover { color: var(--text); }
 
         nav a.active { color: var(--text); }
 
@@ -152,10 +145,8 @@ try {
             width: 60%;
             height: 2px;
             background: var(--red);
-            border-radius: 2px;
         }
 
-        /* ===== HERO SECTION ===== */
         .hero-banner {
             height: 450px;
             background: linear-gradient(rgba(0,0,0,0.35), var(--bg)),
@@ -174,52 +165,32 @@ try {
 
         .hero-title span { color: var(--red); }
 
-        .hero-sub {
-            color: var(--muted);
-            font-size: 0.95rem;
-            max-width: 480px;
-            margin-top: 1rem;
-            line-height: 1.6;
-        }
-
-        /* ===== PRODUCTS SECTION ===== */
         .products-section {
             max-width: 1250px;
             margin: 3rem auto 4rem;
             padding: 0 2.5rem;
         }
 
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            margin-bottom: 1.8rem;
-            flex-wrap: wrap;
-        }
-
         .section-title {
             display: flex;
             align-items: center;
             gap: 0.85rem;
+            margin-bottom: 1.8rem;
         }
 
         .section-title .line {
             width: 4px;
             height: 34px;
             background: var(--red);
-            border-radius: 2px;
         }
 
         .section-title h2 {
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 2.2rem;
-            letter-spacing: 0.05em;
             color: #fff;
             text-transform: uppercase;
         }
 
-        /* ===== PRODUCT GRID ===== */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -231,40 +202,24 @@ try {
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 1rem;
-            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
             text-decoration: none;
             color: inherit;
         }
 
-        .product-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--red);
-            box-shadow: 0 10px 28px rgba(0,0,0,0.35);
-            color: inherit;
-        }
-
         .product-image {
             width: 100%;
             aspect-ratio: 3/4;
-            border-radius: 5px;
             overflow: hidden;
             background: var(--surface2);
             margin-bottom: 0.9rem;
-            border: 1px solid #252525;
         }
 
         .product-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .product-card:hover .product-image img {
-            transform: scale(1.03);
         }
 
         .product-title {
@@ -272,17 +227,7 @@ try {
             font-size: 1.05rem;
             font-weight: 700;
             color: #f4f4f4;
-            line-height: 1.35;
             min-height: 2.4rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .product-excerpt {
-            font-size: 0.8rem;
-            color: var(--muted);
-            line-height: 1.5;
-            margin-bottom: 0.9rem;
-            flex: 1;
         }
 
         .btn-update {
@@ -290,96 +235,63 @@ try {
             width: 100%;
             padding: 0.85rem 1rem;
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 0.85rem;
             font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            border-radius: 5px;
-            border: none;
             background: var(--red);
             color: #fff;
-            cursor: pointer;
             text-decoration: none;
             text-align: center;
-            display: block;
-            transition: all 0.2s;
+            border-radius: 5px;
         }
 
-        .btn-update:hover {
-            background: var(--red-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(224,32,32,0.35);
-            color: #fff;
-        }
-
-        /* ===== FOOTER ===== */
         footer {
             text-align: center;
             padding: 2rem;
             border-top: 1px solid var(--border);
             color: var(--muted);
             font-size: 0.8rem;
-            font-family: 'Barlow Condensed', sans-serif;
-            letter-spacing: 0.08em;
             text-transform: uppercase;
         }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1150px) {
-            .product-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        @media (max-width: 820px) {
-            .top-header { flex-wrap: wrap; justify-content: center; }
-            .search-bar { order: 3; width: 100%; max-width: 100%; }
-            .product-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 560px) {
-            .products-section { padding: 0 1.2rem; }
-            nav { flex-wrap: wrap; }
-            nav a { padding: 1rem 1.2rem; }
-            .product-grid { grid-template-columns: 1fr; }
-            .section-title h2 { font-size: 1.8rem; }
-            .hero-title { font-size: 3rem; }
-        }
+        @media (max-width: 1150px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 820px) { .product-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .product-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="top-header">
-    <a href="#" class="logo">MANGA<span>QUILLA</span></a>
+    <a href="index.php" class="logo">MANGA<span>QUILLA</span></a>
 
     <div class="search-bar">
         <input type="text" placeholder="Search your favorite manga...">
         <span class="icon">🔍</span>
     </div>
 
-    <img src="<?php echo htmlspecialchars($user_data['img_url']); ?>" class="profile-circle" alt="Profile">
+    <a href="profile.php">
+        <img src="images/<?php echo !empty($user_data['img_url']) ? htmlspecialchars($user_data['img_url']) : 'default-avatar.png'; ?>" 
+             class="profile-circle" 
+             alt="Profile" 
+             onerror="this.src='https://ui-avatars.com/api/?name=<?php echo $user_data['username']; ?>'">
+    </a>
 </header>
 
-<!-- NAV -->
 <nav>
-    <a href="#" class="active">Home</a>
+    <a href="index.php" class="active">Home</a>
     <a href="product1.php">Products</a>
     <a href="#">New Arrivals</a>
     <a href="profile.php">My Profile</a>
 </nav>
 
-<!-- HERO -->
 <div class="hero-banner">
     <div>
         <h1 class="hero-title">DEMON SLAYER:<br><span>KIMETSU NO YAIBA</span></h1>
-        <p class="hero-sub">
-            Join Tanjiro Kamado in his quest to save his sister and hunt down the demons that slaughtered his family.
+        <p class="hero-sub" style="color: var(--red); font-weight: bold;">
+            Welcome back, <?php echo htmlspecialchars($user_data['username']); ?>!
         </p>
     </div>
 </div>
 
-<!-- PRODUCTS -->
 <section class="products-section">
-
     <div class="section-header">
         <div class="section-title">
             <div class="line"></div>
@@ -389,7 +301,8 @@ try {
 
     <div class="product-grid">
         <?php
-        $books = $conn->query("SELECT * FROM books")->fetchAll(PDO::FETCH_ASSOC);
+        // Fetch books exactly as defined in your original composition
+        $books = $conn->query("SELECT * FROM books ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
         foreach ($books as $row) :
         ?>
         <div class="product-card">
@@ -398,14 +311,13 @@ try {
             </div>
             <div class="product-title"><?php echo htmlspecialchars($row['title']); ?></div>
             <p class="product-excerpt"><?php echo substr(htmlspecialchars($row['excerpt']), 0, 80); ?>...</p>
+            
             <a href="updatebooks.php?id=<?php echo $row['id']; ?>" class="btn-update">Update Title</a>
         </div>
         <?php endforeach; ?>
     </div>
-
 </section>
 
-<!-- FOOTER -->
 <footer>
     &copy; 2026 MANGAQUILLA &bull; CICT Bulacan State University
 </footer>

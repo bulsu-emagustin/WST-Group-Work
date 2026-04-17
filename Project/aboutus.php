@@ -18,7 +18,6 @@ body {
     color: white;
 }
 
-
 .navbar {
     border-bottom: 1px solid #333;
     padding: 15px 0;
@@ -44,7 +43,6 @@ body {
 .navbar ul li a.active {
     color: white;
 }
-
 
 .about {
     max-width: 1200px;
@@ -121,6 +119,14 @@ body {
     margin-bottom: 8px;
 }
 
+.footer-column a {
+    color: #ddd;
+    text-decoration: none;
+}
+
+.footer-column a:hover {
+    color: white;
+}
 
 .subscribe-box {
     background: rgba(255,255,255,0.1);
@@ -142,7 +148,6 @@ body {
     cursor: pointer;
 }
 
-
 .footer-bottom {
     border-top: 1px solid rgba(255,255,255,0.2);
     margin-top: 30px;
@@ -160,9 +165,6 @@ body {
     color: red;
 }
 
-
-
-
 @media (max-width: 900px) {
     .about {
         flex-direction: column;
@@ -179,20 +181,22 @@ body {
         gap: 20px;
     }
 }
-
-
 </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <header class="navbar">
 <nav>
 <ul>
-<li><a href="#">HOME</a></li>
-<li><a href="#">PRODUCTS</a></li>
-<li><a href="#">NEW ARRIVALS</a></li>
-<li><a href="#" class="active">ABOUT US</a></li>
+<li><a href="index.php">HOME</a></li>
+<li><a href="product.php">PRODUCTS</a></li>
+<li><a href="product1.php">NEW ARRIVALS</a></li>
+<li><a href="aboutus.php" class="active">ABOUT US</a></li>
+<li><a href="login.php">LOGIN</a></li>
+<li><a href="register.php">REGISTER</a></li>
+<li><a href="profile.php">PROFILE</a></li>
 </ul>
 </nav>
 </header>
@@ -232,25 +236,25 @@ body {
 
 <div class="footer-column">
 <h4>Product</h4>
-<p>Manga</p>
-<p>New Arrivals</p>
-<p>Action</p>
-<p>Sci-Fi</p>
+<p><a href="product.php">Manga</a></p>
+<p><a href="product1.php">New Arrivals</a></p>
+<p><a href="product.php">Action</a></p>
+<p><a href="product.php">Sci-Fi</a></p>
 </div>
 
 <div class="footer-column">
 <h4>Information</h4>
-<p>FAQ</p>
-<p>Blog</p>
-<p>Support</p>
+<p><a href="#">FAQ</a></p>
+<p><a href="#">Blog</a></p>
+<p><a href="#">Support</a></p>
 </div>
 
 <div class="footer-column">
 <h4>Company</h4>
-<p>About us</p>
-<p>Careers</p>
-<p>Contact us</p>
-<p>Lift Media</p>
+<p><a href="aboutus.php">About us</a></p>
+<p><a href="#">Careers</a></p>
+<p><a href="#">Contact us</a></p>
+<p><a href="#">Lift Media</a></p>
 </div>
 
 <div class="subscribe-box">
@@ -267,7 +271,9 @@ Hello, we are a dedicated manga online store committed to bringing you authentic
 <div class="footer-bottom">
 <div class="logo">MANGA<span>QUILLA</span></div>
 <div>
-Terms &nbsp; Privacy &nbsp; Cookies
+<a href="#" style="color:white;text-decoration:none;">Terms</a> &nbsp;
+<a href="#" style="color:white;text-decoration:none;">Privacy</a> &nbsp;
+<a href="#" style="color:white;text-decoration:none;">Cookies</a>
 </div>
 </div>
 
