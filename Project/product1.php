@@ -441,7 +441,7 @@
 <a href="">
 
 </a>
-
+  <a href="productSelected.php">
     <div class="product-card" data-category="action fantasy">
       <div class="product-image">
         <img src="https://upload.wikimedia.org/wikipedia/en/4/46/Jujutsu_kaisen.jpg" alt="Jujutsu Kaisen">
@@ -454,6 +454,7 @@
       </div>
       <button class="btn-cart">Add to Cart</button>
     </div>
+  </a>
 
     <div class="product-card" data-category="action fantasy">
       <div class="product-image">

@@ -840,10 +840,10 @@
     <!-- Gallery -->
     <div class="hero-gallery">
       <div class="hero-main-img">
-        <img id="mainImg" src="" alt="Demon Slayer Cover" onerror="this.style.display='none'"/>
+        <img id="mainImg" src="images/demon-slayer-manga-volume-1-cover.jpeg" alt="Demon Slayer Cover" onerror="this.style.display='none'"/>
       </div>
       <div class="hero-thumbs">
-        <div class="hero-thumb active" onclick="switchThumb(this, 0)"><img src="" alt="" onerror="this.style.display='none'"/></div>
+        <div class="hero-thumb active" onclick="switchThumb(this, 0)"><img src="images/demon-slayer-manga-volume-1-cover.jpeg" alt="" onerror="this.style.display='none'"/></div>
         <div class="hero-thumb" onclick="switchThumb(this, 1)"><img src="" alt="" onerror="this.style.display='none'"/></div>
         <div class="hero-thumb" onclick="switchThumb(this, 2)"><img src="" alt="" onerror="this.style.display='none'"/></div>
         <div class="hero-thumb" onclick="switchThumb(this, 3)"><img src="" alt="" onerror="this.style.display='none'"/></div>
