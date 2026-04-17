@@ -1,12 +1,3 @@
-# INTRODUCTION
-
-MangaQuilla is a web-based e-commerce manga book shop designed to provide users with a convenient platform to browse, purchase, and explore a wide variety of manga series. The system allows customers to view manga details, add items to cart, and place orders through an organized and user-friendly interface. It aims to simplify the buying process of manga books by bringing everything into one accessible online store.
-
-
-# REPOSITORY OVERVIEW
-
-This repository contains the complete source code of the MangaQuilla e-commerce system. It includes frontend and backend development using PHP, MySQL, HTML, CSS, JavaScript, and Bootstrap. The system is structured to handle product listings, user accounts, shopping cart functionality, and order processing within a secure and responsive web application.
-
 
 # README WALKTHROUGH
 
