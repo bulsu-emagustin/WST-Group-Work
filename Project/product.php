@@ -434,17 +434,6 @@
 
     <hr class="divider"/>
 
-    <!-- VOLUMES -->
-    <div>
-      <div class="volume-label">Select Volume</div>
-      <div class="volumes" id="volumeSelector">
-        <button class="vol-btn active" data-vol="1" data-price="600" data-orig="900" data-sub="Infinite Castle Arc, Volume 1">Vol.1</button>
-        <button class="vol-btn"        data-vol="2" data-price="550" data-orig="900" data-sub="Infinite Castle Arc, Volume 2">Vol.2</button>
-        <button class="vol-btn"        data-vol="3" data-price="550" data-orig="900" data-sub="Infinite Castle Arc, Volume 3">Vol.3</button>
-        <button class="vol-btn"        data-vol="4" data-price="500" data-orig="900" data-sub="Infinity Fortress Arc, Volume 1">Vol.4</button>
-      </div>
-    </div>
-
     <!-- QUANTITY -->
     <div>
       <div class="qty-label">Quantity</div>
@@ -466,6 +455,17 @@
 
 <!-- TOAST -->
 <div id="toast"></div>
+
+<header class="top-header">
+  <div class="logo">MANGA<span>QUILLA</span></div>
+
+  <div class="search-bar">
+    <input type="text" placeholder="Search manga..." />
+    <span class="icon">🔍</span>
+  </div>
+
+  <div class="profile-circle"></div>
+</header>
 
 <script>
   // ── Volume switching ──
